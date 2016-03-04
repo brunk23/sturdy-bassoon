@@ -7,12 +7,14 @@
   </head>
   <body>
     <h1 id="title">Text Adventure Game</h1>
-    <div class="worldview">
+    <div class="worldview" id="world">
       <!-- This is where we show the text output for the game -->
     </div>
     <div class="input">
       <!-- This is where the player types their input -->
-      
+      <input id="he-said" type="text"
+	     onkeydown="if(event.keyCode == 13 ) processinput();"
+	     </input>
     </div>
     <script src="jquery-2.2.1.js"></script>
     <script src="textgame.js"></script>
