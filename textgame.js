@@ -2,14 +2,46 @@
  * The actual code for the game
  */
 
+var Room = function () {
+    this.description = "";
+    this.look = function () {
+        $("#world").append("<p>" + this.description + "</p>" );
+    }
+    this.exits;
+    this.contents;
+};
+
+var Object = function () {
+    this.description = "";
+    this.look = function () {
+        $("#world").append("<p>" + this.description + "</p>" );
+    }
+    this.drop = function () {
+
+    }
+    this.pickup = function () {
+
+    }
+};
+
 function processinput() {
     $("#world").append("<p>" + $("#he-said").val() + "</p>");
     $("#he-said").val("");
 }
 
-$("#title").text("There's no escape");
+$("#title").text("This is the title");
 
-$("#world").append("<p>You are standing in the main lobby. To the "+
-		       "east and west you see doors leading to the "+
-		       "rest of the school. To the north there is a "+
-		       "door leading back to the parking lot.</p>");
+var lobby = new Room();
+lobby.description = "You are in the lobby of a building.";
+
+var cokebottle = new Object();
+cokebottle.description = "It's a coke bottle.";
+
+var spritebottle = new Object();
+spritebottle.description = "This sprite bottle is empty.";
+
+
+lobby.look();
+cokebottle.look();
+spritebottle.look();
+lobby.look();
