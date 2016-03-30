@@ -1,9 +1,11 @@
 /*
- * The actual code for the game
- */
-
-/*
- * These will be variables used in our program
+ * These will be variables used in our program. We set some constants
+ * here, at the top, so they are easy to change and modify. It is a good
+ * idea to not put the numbers directly in the code. We might want to
+ * change them later and it can be hard to remember which 5s are the ones
+ * we need to change. It can also help make the code more readable, as the
+ * number "30" could mean anything but the variable LowestBeads makes the
+ * meaning clear.
  */
 var MaxRemoved = 4;
 var LowestBeads = 30;
@@ -55,15 +57,29 @@ function update_display() {
  * This handles the main game loop
  */
 function play_game() {
+
+    // Infinite loop, we play until there is a winner
     while( true ) {
+
+	// Update the display for the player and take their turn
 	update_display();
 	player_turn();
+
+	// Check to see if the player won, if we did then we
+	// run the code to tell the player and use break to
+	// end the loop
 	if( remaining_beads <= 0 ) {
 	    win_game();
 	    break;
 	}
+
+	// Update the display for the computer and it takes turn
 	update_display();
 	computer_turn();
+
+	// Check to see if the computer won, if it did then we
+	// run the code to tell the player and use break to
+	// end the loop
 	if( remaining_beads <= 0 ) {
 	    lose_game();
 	    break;
@@ -101,12 +117,13 @@ function lose_game() {
 
 }
 
+// This function is probably going to be removed.
 function processinput() {
     $("#world").append("<p>" + $("#he-said").val() + "</p>");
     $("#he-said").val("");
 }
 
-
+/* Set the title based on the max we can take at once */
 $("#title").text("Take up to " + MaxRemoved);
 
 /* Start the game */
