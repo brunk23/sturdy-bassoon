@@ -2,6 +2,25 @@
  * The actual code for the game
  */
 
+/*
+ * Will return a random int between the two arguments, inclusive.
+ */
+function randBetween(low, high) {
+    var i = 1;
+    if( high > low ) {
+	i += (high - low);
+    } else {
+	i += (low - high);
+    }
+    var j = Math.floor( Math.random() * i );
+    if( high > low ) {
+	j += low;
+    } else {
+	j += high;
+    }
+    return j;
+}
+
 var Room = function () {
     this.description = "";
     this.look = function () {
