@@ -47,13 +47,6 @@ function create_beads() {
 }
 
 /*
- * Will print the number and update the screen
- */
-function update_display() {
-
-}
-
-/*
  * This handles the main game loop
  */
 function play_game() {
@@ -118,9 +111,8 @@ function lose_game() {
 }
 
 // This function is probably going to be removed.
-function processinput() {
-    $("#world").append("<p>" + $("#he-said").val() + "</p>");
-    $("#he-said").val("");
+function update_display() {
+    $("#he-said").val(remaining_beads);
 }
 
 /* Set the title based on the max we can take at once */
