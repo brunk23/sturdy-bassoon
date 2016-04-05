@@ -112,8 +112,7 @@ function lose_game() {
 
 // This function is probably going to be removed.
 function update_display() {
-	$("#he-said").val("");
-	$("#he-said").append("<h1>"+remaining_beads+"</h1>");
+	$("#he-said").text(remaining_beads);
 }
 
 /* Set the title based on the max we can take at once */
