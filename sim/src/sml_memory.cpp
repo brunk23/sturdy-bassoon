@@ -62,7 +62,7 @@ int opcode_read(machineState *sml)
   if( sml->obc > 1 ) {
     // This is the second read
     for(i = 0; i < sml->obc; i++ ) {
-      input *= (23 + sml->outbuff[i]);
+      input += i* (23 + sml->outbuff[i]);
       input %= 9797;
     }
   }
