@@ -122,9 +122,17 @@ int main(int argc, char *argv[])
   } else {
     debug = false;
   }
+
+  n=0;
   smlReal.counter = 0;
   smlReal.running = true;
   while ( smlReal.running ) {
+    /* if( debug ) {
+      n++;
+      if( n%10 == 0 ) {
+	memory_dump(sml);
+      }
+    } */
     if(smlReal.counter == MEMSIZE) {
       error_message("COUNTER OVERRAN MEMORY");
       returnCode = 1;		// magic number again
