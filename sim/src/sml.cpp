@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
   }
 
   if ( argc > 1 ) {
+    memory_dump(sml);
     debug = true;
   } else {
     debug = false;
