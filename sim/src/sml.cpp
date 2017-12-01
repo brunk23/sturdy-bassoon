@@ -17,7 +17,8 @@ using std::ifstream;
 using std::setfill;
 
 void process(string line, machineState *sml) {
-  int input, i;
+  int input;
+  unsigned int i;
   bool negative = false;
 
   if( !( (line[0] == '-') ||
@@ -66,6 +67,7 @@ void process(string line, machineState *sml) {
 int main(int argc, char *argv[])
 {
   int returnCode = 0;
+  unsigned int n;
   string line;
   machineState smlReal;
   machineState *sml = &smlReal;
@@ -77,16 +79,48 @@ int main(int argc, char *argv[])
     return returnCode;
   }
 
-  //  debug = true;
+  cout << "FCC booting . . .\n\n** ERROR: MEMORY CHIP NOT INSERTED **";
+  cout << "\n\nENTERING MANUAL ENTRY MODE\n";
+  cout << "PRESS THE \"GO\" BUTTON WHEN READY\n" << endl;
+  
   cout << smlReal.counter << ": ";
   while( cin >> line ) {
     if( line[0] == 'g' || line[0] =='G') {
+      cout << "CODE: ";
+      cin >> line;
+      returnCode = 0;
+      n = 0;
+      if( line[0] == '-' ) {
+	debug = true;
+	n++;
+      }
+      while( n < line.length() ) {
+	if( line[n] >= '0' && line[n] <= '9' ) {
+	  returnCode *= 10;
+	  returnCode += line[n] - '0';
+	  n++;
+	} else {
+	  break;
+	}
+      }
+      if( debug ) {
+	returnCode *= -1;
+	debug = false;
+      }
+      sml->outbuff[0] = returnCode;
+      sml->obc++;
       break;
     }
+    
     process(line, sml);
     cout << smlReal.counter << ": ";
   }
 
+  if ( argc > 1 ) {
+    debug = true;
+  } else {
+    debug = false;
+  }
   smlReal.counter = 0;
   smlReal.running = true;
   while ( smlReal.running ) {
