@@ -7,21 +7,26 @@
 4000    # jump to the start
 0001	# Data ONE
 1079	# ENDLOOP
-4300    # end of program
+1080	# LOWER BOUND
+1099	# UPPER BOUND
+2080	# AA load a
+3181	# sub a-b
+41__	# jneg NOSWAP
+2080    # AB load a
+21__    # store tmp
+2081	# AC load b
+2180	# store a
+20__    # load tmp
+2181	# store b
+2011	# load (load a)
+3109	# subtract LOWER BOUND
+42__	# jzero NOSWAP (keep going)
+2011	# load (load a)
+2116	# save it where load B was AC
+3108	# decrement it
+2111	# store at AA
+2114	# store at AB
 
-	# load a
-	# load b
-	# sub a-b
-	# jneg noswap
-	# load a
-	# store tmp
-	# load b
-	# store a
-	# load tmp
-	# store b
-	# load (load a)
-	# subtract (lower bound)
-	# jzero noswap
 	# decrement all the a and b references
 	# jump sort_start
 	# noswap
