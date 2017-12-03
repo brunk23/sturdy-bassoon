@@ -1,0 +1,35 @@
+1099	# read in here
+2000	# load read loop
+3107    # subtract one
+2100	# store read loop
+3108    # subtract ENDLOOP
+4209	# jump zero to done
+4000    # jump to the start
+0001	# Data ONE
+1079	# ENDLOOP
+4300    # end of program
+
+	# load a
+	# load b
+	# sub a-b
+	# jneg noswap
+	# load a
+	# store tmp
+	# load b
+	# store a
+	# load tmp
+	# store b
+	# load (load a)
+	# subtract (lower bound)
+	# jzero noswap
+	# decrement all the a and b references
+	# jump sort_start
+	# noswap
+	# increment all the a and b references
+	# load (load b) 
+	# subtract (upper bound)
+	# jneg sort_start
+	# end of program
+	# 
+ g
+77
