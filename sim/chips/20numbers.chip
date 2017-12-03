@@ -1,50 +1,9 @@
-1099	# read in here
-2000	# load read loop
-3107    # subtract one
-2100	# store read loop
-3108    # subtract ENDLOOP
-4209	# jump zero to done
-4000    # jump to the start
-0001	# Data ONE
-1079	# ENDLOOP
-2080	# LOWER BOUND
-2099	# UPPER BOUND
-2080	# LOADA load a
-3181	# SUBB sub a-b 
-41__	# jneg NOSWAP
-2080    # LOADA load a
-21__    # store TMP
-2081	# LOADB load b
-2180	# STOREA  store a
-20__    # load TMP
-2181	# STOREB store b
-2011	# load (load a)
-3109	# subtract LOWER BOUND
-42__	# jzero NOSWAP (keep going)
-2011	# load (load a)
-2116	# save it where load B was AC
-3108	# decrement it
-2111	# store at AA
-2114	# store at AB
-2017	# load (store a)
-2119	# replace (store b)
-3108	# decrement it
-2117	# replace (store a)
-2012
-3108
-2112	
-4011	# jump sort_start
-2017	# noswap increment all the a and b references
-3111	# load (load b) subtract UPPER BOUND
-42__	# end of program
-2016	# load b
-2114	# replace load a
-2111	# replace load a
-3008	# increment it
-2116	# replace load b
-#### INCREMENT WORK IN PROGRESS ####
-4011	# jump sort_start
-	# end of program
-	# 
- g
-77
+1099	2000	3107    2100	3108    4209	4000    0001	1079	2080
+2099	2080	3181	4136	2080    2152    2081	2180	2052    2181	
+2011	3109	4236	2011	2116	3107	2111	2114	2017	2119	
+3107	2117	2012	3107	2112	4011	2016	3110	4253	2016	
+2114	2111	3007	2116	2019	2117	3007	2119	2012	3007	
+2112	4011	0       1199	2053	3107    2153	3161    4260	4053    
+4300	1179
+g
+523

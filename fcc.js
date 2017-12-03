@@ -13,7 +13,19 @@ function FCC() {
     }
 
     this.errormessage = function( a ) {
-	this.errormessage = a;
+	this.error = a;
+    }
+
+    this.load = function() {
+	var dest = this.memory[ this.counter ] % 100;
+	this.acc = this.memory[dest];
+	this.counter++;
+    }
+
+    this.store = function() {
+	var dest = this.memory[ this.counter ] % 100;
+	this.memory[dest] = this.acc;
+	this.counter++;
     }
     
     /*******
@@ -85,3 +97,43 @@ function FCC() {
 }
 
 var fcc = new FCC();
+
+function run( a ) {
+    while( a.running ) {
+	switch ( parseInt( a.memory[a.counter] / 100 ) ) {
+	case 20:
+	    a.load();
+	    break;
+	case 21:
+	    a.store();
+	    break;
+	case 30:
+	    a.add();
+	    break;
+	case 31:
+	    a.subtract();
+	    break;
+	case 32:
+	    a.multiply();
+	    break;
+	case 33:
+	    a.divide();
+	    break;
+	case 40:
+	    a.branch();
+	    break;
+	case 41:
+	    a.branchneg();
+	    break;
+	case 42:
+	    a.branchzero();
+	    break;
+	case 43:
+	    a.halt();
+	    break;
+	default:
+	    a.running = false;
+	    a.errormessage( "Unknown operation." );
+	}
+    }
+}
