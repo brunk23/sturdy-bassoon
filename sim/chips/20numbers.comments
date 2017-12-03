@@ -1,3 +1,5 @@
+# HAS BUG >> INFINITE LOOP ON IDENTICAL NUMBERS, SEE 30numbers.chip
+# for fix (which reverses the sort but doesn't halt).
 # This will read in 20 numbers, sort them, and print them in descending
 # order. It would be easy to change this to print them in ascending order
 # by changing only the print statement at the end.  This uses almost all

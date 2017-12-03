@@ -127,9 +127,9 @@ int main(int argc, char *argv[])
   smlReal.counter = 0;
   smlReal.running = true;
   while ( smlReal.running ) {
-    /* if( debug ) {
+  /* if( debug ) {
       n++;
-      if( n%10 == 0 ) {
+      if( n%1 == 0 ) {
 	memory_dump(sml);
       }
     } */
@@ -263,7 +263,7 @@ int memory_dump(machineState *sml)
     cout << endl;
   }
   cout << endl;
-  sml->counter++;
+//  sml->counter++;
   return 0;
 }
 
