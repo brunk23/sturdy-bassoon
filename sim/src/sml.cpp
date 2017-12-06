@@ -123,16 +123,9 @@ int main(int argc, char *argv[])
     debug = false;
   }
 
-  n=0;
   smlReal.counter = 0;
   smlReal.running = true;
   while ( smlReal.running ) {
-  /* if( debug ) {
-      n++;
-      if( n%1 == 0 ) {
-	memory_dump(sml);
-      }
-    } */
     if(smlReal.counter == MEMSIZE) {
       error_message("COUNTER OVERRAN MEMORY");
       returnCode = 1;		// magic number again
@@ -263,12 +256,12 @@ int memory_dump(machineState *sml)
     cout << endl;
   }
   cout << endl;
-//  sml->counter++;
+  //  sml->counter++;
   return 0;
 }
 
 bool is_valid_address(int address) {
-	return !(out_of_bounds(address, 0, MEMSIZE - 1));
+  return !(out_of_bounds(address, 0, MEMSIZE - 1));
 }
 			       
 /*
