@@ -29,15 +29,15 @@ struct machineState {
 
 /*****
  * Proposed window layout
- * +------------------+
- * | chip window      |
- * +------------------+
- * | message window   |
- * +------------------+
- * | mem 13 x 75 min  |
- * +------------------+
- * | input window     |
- * +------------------+
+ * +------------------+----+
+ * | chip window      | O  |
+ * +------------------+ U  |
+ * | message window   | T  |
+ * +------------------+ P  |
+ * | mem 13 x 75 min  | U  |
+ * +------------------+ T  |
+ * | input window     |    |
+ * +------------------+----+
  *****/
 
 // These functions are in the main program file
