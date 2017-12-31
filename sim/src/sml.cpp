@@ -147,10 +147,8 @@ int main(int argc, char *argv[])
   displaychip(sml);
   displaymem(sml);
 
-  cout << "FCC booting . . .\n\n** ERROR: MEMORY CHIP NOT INSERTED **";
-  cout << "\n\nENTERING MANUAL ENTRY MODE\n";
-  cout << "PRESS THE \"GO\" BUTTON WHEN READY\n" << endl;
-  
+  error_message("FCC booting . . .  ERROR: MEMORY CHIP NOT INSERTED");
+
   cout << smlReal.counter << ": ";
   while( cin >> line ) {
     if( line[0] == 'g' || line[0] =='G') {
@@ -267,16 +265,8 @@ int init_machine(machineState *sml)
 
 void error_message(string message)
 {
-  unsigned int y = message.size();
-  cout << "\n\n\t";
-  for(unsigned int i = 0; i < y + 4; ++i) {
-    cout << "*";
-  }
-  cout << "\n\t* " << message << " *" << "\n\t";
-  for(unsigned int i = 0; i < y + 4; ++i) {
-    cout << "*";
-  }
-  cout << "\n\n\n";
+  mvwprintw(messagewindow, 2, 2, message.c_str());
+  wrefresh(messagewindow);
 }
 
 int memory_dump(machineState *sml)
