@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <fstream>
+#include <signal.h>
 
 #include "sml.h"
 #include "sml_math.h"
@@ -15,6 +16,35 @@ using std::setw;
 using std::string;
 using std::ifstream;
 using std::setfill;
+
+WINDOW *memwindow;
+WINDOW *chipwindow;
+WINDOW *messagewindow;
+WINDOW *inputwindow;
+
+int init_windows() {
+  int height, width;
+
+  getmaxyx(stdscr, height, width);
+  nodelay(stdscr, TRUE);
+  noecho();
+  chipwindow = newwin(3, width, 0, 0);
+  messagewindow = newwin(5, width, 3, 0);
+  memwindow = newwin(13, width, 8, 0);
+  inputwindow = newwin(3, width, 21, 0);
+  wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwaddstr(chipwindow, 0, width/2 - 5, "Simpletron");
+
+  getch();
+  wrefresh(chipwindow);
+  wrefresh(memwindow);
+  wrefresh(inputwindow);
+  wrefresh(messagewindow);
+  return 0;
+}
 
 void process(string line, machineState *sml) {
   int input;
@@ -79,6 +109,7 @@ int main(int argc, char *argv[])
     return returnCode;
   }
 
+  init_windows();
   cout << "FCC booting . . .\n\n** ERROR: MEMORY CHIP NOT INSERTED **";
   cout << "\n\nENTERING MANUAL ENTRY MODE\n";
   cout << "PRESS THE \"GO\" BUTTON WHEN READY\n" << endl;

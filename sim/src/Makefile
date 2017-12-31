@@ -4,7 +4,7 @@ SIMC = *.cpp
 SIMH = *.h
 
 sml_sim: $(SIMC) $(SIMH)
-	c++ -g -Wall -o FCC $(SIMC)
+	c++ -g -Wall -lncurses -o FCC $(SIMC)
 
 clean:
 	rm *.o
