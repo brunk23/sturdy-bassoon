@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     smlReal.operationCode = smlReal.instructionRegister / OPFACT;
     smlReal.operand = smlReal.instructionRegister % OPFACT;
     returnCode=sml->inst_tble[smlReal.operationCode]();
-    if( key == ERR ) {
+    if( key != ERR ) {
       displaymem();
       displaychip();
     }
