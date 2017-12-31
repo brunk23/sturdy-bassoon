@@ -70,7 +70,7 @@ void process(string line) {
 
 int main(int argc, char *argv[])
 {
-  int returnCode = 0;
+  int returnCode = 0, key;
   unsigned int n;
   string line;
   machineState smlReal;
@@ -132,9 +132,14 @@ int main(int argc, char *argv[])
     debug = false;
   }
 
+  n = 1;
   smlReal.counter = 0;
   smlReal.running = true;
-  while ( smlReal.running ) {
+  while ( n ) {
+    key = getch();
+    if( key == 'q' ) {
+      n = 0;
+    }
     if(smlReal.counter == MEMSIZE) {
       error_message("COUNTER OVERRAN MEMORY");
       returnCode = 1;		// magic number again
@@ -144,6 +149,10 @@ int main(int argc, char *argv[])
     smlReal.operationCode = smlReal.instructionRegister / OPFACT;
     smlReal.operand = smlReal.instructionRegister % OPFACT;
     returnCode=sml->inst_tble[smlReal.operationCode]();
+    if( key == ERR ) {
+      displaymem();
+      displaychip();
+    }
   }
   if( debug ) {
     // we only dump the memory if we input the file by hand
