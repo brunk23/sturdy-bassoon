@@ -7,14 +7,14 @@
 #include "sml_control.h"
 
 // branch operation
-int opcode_branch(machineState *sml)
+int opcode_branch()
 {
   // Just change the counter, we're going to a different spot.
   sml->counter = sml->operand;
   return 0;
 }
 
-int opcode_branch_neg(machineState *sml)
+int opcode_branch_neg()
 {
   if( sml->accumulator < 0 ) {	
     sml->counter = sml->operand;
@@ -24,7 +24,7 @@ int opcode_branch_neg(machineState *sml)
   return 0;
 }
 
-int opcode_branch_zero(machineState *sml)
+int opcode_branch_zero()
 {
   if( sml->accumulator == 0 ) {	
     sml->counter = sml->operand;
@@ -34,13 +34,13 @@ int opcode_branch_zero(machineState *sml)
   return 0;
 }
 
-int opcode_nop(machineState *sml)
+int opcode_nop()
 {
   sml->counter++;
   return 0;
 }
 
-int opcode_halt(machineState *sml)
+int opcode_halt()
 {
   sml->running = false;
   error_message( std::to_string(sml->outbuff[0]) +
@@ -50,7 +50,7 @@ int opcode_halt(machineState *sml)
 }
 
 // Handle trying to run an unsupported operation
-int opcode_invalid(machineState *sml)
+int opcode_invalid()
 {
   error_message("INVALID OPERATION CODE: MACHINE HALTED");
   sml->running = false;

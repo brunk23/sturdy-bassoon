@@ -2,19 +2,11 @@
  * Memory related operations
  */
 
-#include <iostream>
-#include <string>
-
-using std::cin;
-using std::cout;
-using std::endl;
-using std::string;
-
 #include "sml.h"
 #include "sml_memory.h"
 
 // load operation
-int opcode_load(machineState *sml)
+int opcode_load()
 {
   sml->counter++;		// increment the instruction counter	
   sml->accumulator = sml->memory[sml->operand];
@@ -22,7 +14,7 @@ int opcode_load(machineState *sml)
 }
 
 // store operation
-int opcode_store(machineState *sml)
+int opcode_store()
 {
   sml->counter++;		// increment the instruction counter	
   sml->memory[sml->operand] = sml->accumulator;
@@ -30,7 +22,7 @@ int opcode_store(machineState *sml)
 }
 
 // simple operation
-int opcode_read(machineState *sml)
+int opcode_read()
 {
   int buffer[MEMSIZE] = {
     -9596, -3369, 2433, -5286, -3242, 1019, 3428, 5642, -1154, 1343,
@@ -72,7 +64,7 @@ int opcode_read(machineState *sml)
   return 0;
 }
   
-int opcode_write(machineState *sml)
+int opcode_write()
 {
   sml->outbuff[sml->obc] = sml->memory[sml->operand];
   sml->obc++;

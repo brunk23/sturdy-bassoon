@@ -6,7 +6,7 @@
 #include "sml_math.h"
 
 // add operation
-int opcode_add(machineState *sml)
+int opcode_add()
 {
   sml->counter++;
   sml->accumulator += sml->memory[sml->operand];
@@ -15,7 +15,7 @@ int opcode_add(machineState *sml)
 }
 
 // subtract operation
-int opcode_subtract(machineState *sml)
+int opcode_subtract()
 {
   sml->counter++;
   sml->accumulator -= sml->memory[sml->operand];
@@ -24,7 +24,7 @@ int opcode_subtract(machineState *sml)
 }
 
 // simple operation
-int opcode_multiply(machineState *sml)
+int opcode_multiply()
 {
   sml->counter++;
   sml->accumulator *= sml->memory[sml->operand];
@@ -33,7 +33,7 @@ int opcode_multiply(machineState *sml)
 }
 
 // division operation
-int opcode_divide(machineState *sml)
+int opcode_divide()
 {
   if ( sml->memory[sml->operand] == 0 ) {
     error_message("DIVIDE BY ZERO: MACHINE HALTED");
@@ -46,7 +46,7 @@ int opcode_divide(machineState *sml)
 }
 
 // provide the modulus operation
-int opcode_mod(machineState *sml)
+int opcode_mod()
 {
   if ( sml->memory[sml->operand] == 0 ) {
     error_message("DIVIDE BY ZERO: MACHINE HALTED");
@@ -58,7 +58,7 @@ int opcode_mod(machineState *sml)
   return 0;
 }
 
-int opcode_inc(machineState *sml)
+int opcode_inc()
 {
   sml->counter++;
   sml->memory[sml->operand]++;
@@ -66,7 +66,7 @@ int opcode_inc(machineState *sml)
   return 0;
 }
 
-int opcode_dec(machineState *sml)
+int opcode_dec()
 {
   sml->counter++;
   sml->memory[sml->operand]--;

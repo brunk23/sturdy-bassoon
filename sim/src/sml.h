@@ -10,7 +10,7 @@ using std::string;
 
 struct machineState;		/* Forward declare */
 
-typedef int (*opPtr)(machineState *);
+typedef int (*opPtr)();
 
 struct machineState {
   int accumulator;
@@ -27,27 +27,13 @@ struct machineState {
   bool running;
 };
 
-/*****
- * Proposed window layout
- * +------------------+----+
- * | chip window      | O  |
- * +------------------+ U  |
- * | message window   | T  |
- * +------------------+ P  |
- * | mem 13 x 75 min  | U  |
- * +------------------+ T  |
- * | input window     |    |
- * +------------------+----+
- *****/
-
 // These functions are in the main program file
-int init_machine(machineState *);
-int init_windows();
-void displaymem(machineState *sml);
-void displaychip(machineState *sml);
-int memory_dump(machineState *sml);
+int init_machine();
+int memory_dump();
 void error_message(string message);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int address);
+
+extern machineState *sml;
 
 #endif

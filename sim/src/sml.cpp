@@ -8,6 +8,7 @@
 #include "sml_math.h"
 #include "sml_control.h"
 #include "sml_memory.h"
+#include "sml_display.h"
 
 using std::cin;
 using std::cout;
@@ -17,69 +18,9 @@ using std::string;
 using std::ifstream;
 using std::setfill;
 
-WINDOW *memwindow;
-WINDOW *chipwindow;
-WINDOW *messagewindow;
-WINDOW *inputwindow;
-WINDOW *outputwindow;
+machineState *sml;
 
-int init_windows() {
-  int height, width;
-
-  getmaxyx(stdscr, height, width);
-  nodelay(stdscr, TRUE);
-  noecho();
-  chipwindow = newwin(3, width-10, 0, 0);
-  messagewindow = newwin(5, width-10, 3, 0);
-  memwindow = newwin(13, width-10, 8, 0);
-  inputwindow = newwin(3, width-10, 21, 0);
-  outputwindow = newwin(height, 10, 0, width - 10);
-  wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  mvwaddstr(chipwindow, 0, width/2 - 10, "Simpletron");
-  mvwaddstr(outputwindow, 0, 2, "OUTPUT");
-  mvwaddstr(memwindow, 0, width/2 - 8, "MEMORY");
-  mvwaddstr(inputwindow, 0, width/2 - 7, "INPUT");
-  mvwaddstr(messagewindow, 0, width/2 - 10, "Messages");
-  wmove(inputwindow,1,1);
-  wrefresh(chipwindow);
-  wrefresh(outputwindow);
-  wrefresh(memwindow);
-  wrefresh(inputwindow);
-  wrefresh(messagewindow);
-  return 0;
-}
-
-void displaymem(machineState *sml) {
-  int i;
-  mvwprintw(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
-  for( i = 0; i < MEMSIZE; i++ ) {
-    if( (i % 10) == 0 ) {
-      mvwprintw(memwindow, i / 10 + 2, 1, "%02i:", i);
-    }
-    if(sml->memory[i] >= 0 ) {
-      mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "+%04i",sml->memory[i]);
-    } else {
-      mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "-%04i",-1*sml->memory[i]);
-    }
-  }
-  wrefresh(memwindow);
-}
-
-void displaychip(machineState *sml) {
-  mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->counter);
-  if(sml->accumulator >= 0 ) {
-    mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->accumulator);
-  } else {
-    mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->accumulator);
-  }
-  wrefresh(chipwindow);
-}
-
-void process(string line, machineState *sml) {
+void process(string line) {
   int input;
   unsigned int i;
   bool negative = false;
@@ -118,7 +59,7 @@ void process(string line, machineState *sml) {
       // A new number started
       if( (line[i] == '-') || (line[i] >= '0' && line[i] <= '9') ) {
 	cout << "Sending: " << line.substr(i) << endl;
-	process( line.substr(i), sml );
+	process( line.substr(i) );
 	return;
       }
       // ignore everything else.
@@ -133,19 +74,21 @@ int main(int argc, char *argv[])
   unsigned int n;
   string line;
   machineState smlReal;
-  machineState *sml = &smlReal;
   bool debug = false;
 
+  sml = &smlReal;
+
   // If there's an error making the machine, quit.
-  if ( (returnCode = init_machine(sml)) ) {
+  if ( (returnCode = init_machine()) ) {
     cout << "ERROR: Failed to create SML Machine." << endl;
     return returnCode;
   }
   initscr();
   init_windows();
+  signal(SIGWINCH, sig_winch);
 
-  displaychip(sml);
-  displaymem(sml);
+  displaychip();
+  displaymem();
 
   error_message("FCC booting . . .  ERROR: MEMORY CHIP NOT INSERTED");
 
@@ -178,12 +121,12 @@ int main(int argc, char *argv[])
       break;
     }
     
-    process(line, sml);
+    process(line);
     cout << smlReal.counter << ": ";
   }
 
   if ( argc > 1 ) {
-    memory_dump(sml);
+    memory_dump();
     debug = true;
   } else {
     debug = false;
@@ -200,12 +143,12 @@ int main(int argc, char *argv[])
     smlReal.instructionRegister = smlReal.memory[smlReal.counter];
     smlReal.operationCode = smlReal.instructionRegister / OPFACT;
     smlReal.operand = smlReal.instructionRegister % OPFACT;
-    returnCode=sml->inst_tble[smlReal.operationCode](sml);
+    returnCode=sml->inst_tble[smlReal.operationCode]();
   }
   if( debug ) {
     // we only dump the memory if we input the file by hand
     // or we request it
-    memory_dump(sml);
+    memory_dump();
   } else {
     cout << endl << endl;
   }
@@ -213,7 +156,7 @@ int main(int argc, char *argv[])
   return returnCode;
 }
 
-int init_machine(machineState *sml)
+int init_machine()
 {
   // Unsupported OPCODES crash the machine.
   for(int i = 0; i < MAXOP; ++i) {
@@ -269,7 +212,7 @@ void error_message(string message)
   wrefresh(messagewindow);
 }
 
-int memory_dump(machineState *sml)
+int memory_dump()
 {
   cout << "\n\nREGISTERS:" << endl
        << setfill(' ') << setw(20) << "Accumulator" << setw(8)
