@@ -53,6 +53,32 @@ int init_windows() {
   return 0;
 }
 
+void displaymem(machineState *sml) {
+  int i;
+  mvwprintw(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
+  for( i = 0; i < MEMSIZE; i++ ) {
+    if( (i % 10) == 0 ) {
+      mvwprintw(memwindow, i / 10 + 2, 1, "%02i:", i);
+    }
+    if(sml->memory[i] >= 0 ) {
+      mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "+%04i",sml->memory[i]);
+    } else {
+      mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "-%04i",-1*sml->memory[i]);
+    }
+  }
+  wrefresh(memwindow);
+}
+
+void displaychip(machineState *sml) {
+  mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->counter);
+  if(sml->accumulator >= 0 ) {
+    mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->accumulator);
+  } else {
+    mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->accumulator);
+  }
+  wrefresh(chipwindow);
+}
+
 void process(string line, machineState *sml) {
   int input;
   unsigned int i;
@@ -117,6 +143,10 @@ int main(int argc, char *argv[])
   }
   initscr();
   init_windows();
+
+  displaychip(sml);
+  displaymem(sml);
+
   cout << "FCC booting . . .\n\n** ERROR: MEMORY CHIP NOT INSERTED **";
   cout << "\n\nENTERING MANUAL ENTRY MODE\n";
   cout << "PRESS THE \"GO\" BUTTON WHEN READY\n" << endl;

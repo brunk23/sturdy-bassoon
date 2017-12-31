@@ -43,6 +43,8 @@ struct machineState {
 // These functions are in the main program file
 int init_machine(machineState *);
 int init_windows();
+void displaymem(machineState *sml);
+void displaychip(machineState *sml);
 int memory_dump(machineState *sml);
 void error_message(string message);
 bool out_of_bounds(int, int, int);
