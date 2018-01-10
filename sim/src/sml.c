@@ -1,86 +1,25 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <fstream>
+#include <stdio.h>
 #include <signal.h>
 
 #include "sml.h"
 #include "sml_math.h"
 #include "sml_control.h"
 #include "sml_memory.h"
-#include "sml_display.h"
+#include "sml_io.h"
 
-using std::cin;
-using std::cout;
-using std::endl;
-using std::setw;
-using std::string;
-using std::ifstream;
-using std::setfill;
-
-machineState *sml;
-
-void process(string line) {
-  int input;
-  unsigned int i;
-  bool negative = false;
-
-  if( !( (line[0] == '-') ||
-	 (line[0] >= '0' && line[0] <= '9'))) {
-    return;
-  }
-
-  input = 0;
-  for( i = 0; i < line.length(); i++ ) {
-
-    if( line[i] == '-' ) {
-      negative = true;
-      continue;
-    }
-    if( (line[i] >= '0') && (line[i] <='9') ) {
-      input *= 10;
-      input += line[i] - '0';
-    } else {
-      break;
-    }
-  }
-  if( !out_of_bounds(input,MINVAL,MAXVAL) ) {
-    if( negative ) {
-      input *= -1;
-    }
-    sml->memory[sml->counter++] = input;
-  }
-  if( i < line.length() ) {
-    while( i < line.length() ) {
-      // Ignore comments
-      if( line[i] == '#' ) {
-	return;
-      }
-      // A new number started
-      if( (line[i] == '-') || (line[i] >= '0' && line[i] <= '9') ) {
-	cout << "Sending: " << line.substr(i) << endl;
-	process( line.substr(i) );
-	return;
-      }
-      // ignore everything else.
-      i++;
-    }
-  }
-}
+struct machineState *sml;
 
 int main(int argc, char *argv[])
 {
-  int returnCode = 0, key;
-  unsigned int n;
-  string line;
-  machineState smlReal;
+  int returnCode = 0;
+  struct machineState smlReal;
   bool debug = false;
 
   sml = &smlReal;
 
   // If there's an error making the machine, quit.
   if ( (returnCode = init_machine()) ) {
-    cout << "ERROR: Failed to create SML Machine." << endl;
+    fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
     return returnCode;
   }
   initscr();
@@ -90,16 +29,7 @@ int main(int argc, char *argv[])
   displaychip();
   displaymem();
 
-  error_message("FCC booting . . .  ERROR: MEMORY CHIP NOT INSERTED");
-
-  cout << smlReal.counter << ": ";
-  while( cin >> line ) {
-    if(line[0] == 'g' || line[0] =='G') {
-      break;
-    }
-    process(line);
-    cout << smlReal.counter << ": ";
-  }
+  error_message("FCC booting . . .");
 
   if ( argc > 1 ) {
     memory_dump();
@@ -108,43 +38,54 @@ int main(int argc, char *argv[])
     debug = false;
   }
 
-  n = 1;
-  smlReal.counter = 0;
-  smlReal.running = true;
-  while ( n ) {
-    key = getch();
-    if( key == 'q' ) {
-      n = 0;
-    }
-    if(smlReal.counter == MEMSIZE) {
-      error_message("COUNTER OVERRAN MEMORY");
-      returnCode = 1;		// magic number again
-      break;
-    }
-    smlReal.instructionRegister = smlReal.memory[smlReal.counter];
-    smlReal.operationCode = smlReal.instructionRegister / OPFACT;
-    smlReal.operand = smlReal.instructionRegister % OPFACT;
-    returnCode=sml->inst_tble[smlReal.operationCode]();
-    if( key != ERR ) {
-      displaymem();
-      displaychip();
-    }
-  }
+  run_loop();
+
   if( debug ) {
     // we only dump the memory if we input the file by hand
     // or we request it
     memory_dump();
   } else {
-    cout << endl << endl;
+    printf("\n\n");
   }
   endwin();
   return returnCode;
 }
 
+int run_loop() {
+  unsigned int returnCode;
+  int n, key;
+
+  n = 1;
+  sml->counter = 0;
+  sml->running = true;
+  while ( n ) {
+    key = getch();
+    if( key == 'q' ) {
+      n = 0;
+    }
+
+    if(sml->counter == MEMSIZE) {
+      error_message("COUNTER OVERRAN MEMORY");
+      returnCode = 1;		// magic number again
+      break;
+    }
+    sml->instructionRegister = sml->memory[sml->counter];
+    sml->operationCode = sml->instructionRegister / OPFACT;
+    sml->operand = sml->instructionRegister % OPFACT;
+    returnCode=sml->inst_tble[sml->operationCode]();
+    if( key != ERR ) {
+      displaymem();
+      displaychip();
+    }
+  }
+  return returnCode;
+}
+
 int init_machine()
 {
+  int i;
   // Unsupported OPCODES crash the machine.
-  for(int i = 0; i < MAXOP; ++i) {
+  for(i = 0; i < MAXOP; ++i) {
     sml->inst_tble[i] = opcode_invalid;
   }
 
@@ -183,7 +124,7 @@ int init_machine()
   sml->running = false;
   sml->ibc = 0;
   sml->obc = 0;
-  for(int i = 0; i < MEMSIZE; ++i) {
+  for(i = 0; i < MEMSIZE; ++i) {
     sml->inbuff[i] = 0;
     sml->outbuff[i] = 0;
     sml->memory[i] = 0;
@@ -191,59 +132,61 @@ int init_machine()
   return 0;
 }
 
-void error_message(string message)
+void error_message(char *message)
 {
-  mvwprintw(messagewindow, 2, 2, message.c_str());
+  mvwprintw(messagewindow, 2, 2, message);
   wrefresh(messagewindow);
 }
 
 int memory_dump()
 {
-  cout << "\n\nREGISTERS:" << endl
-       << setfill(' ') << setw(20) << "Accumulator" << setw(8)
-       << setfill(' ') << sml->accumulator << endl
-       << setfill(' ') << setw(20) << "instructionPointer" << setw(8)
-       << setfill(' ') << sml->counter << endl    
-       << setfill(' ') << setw(20) << "instructionRegister" << setw(8)
-       << setfill(' ') << sml->instructionRegister << endl
-       << setfill(' ') << setw(20) << "operationCode" << setw(8)
-       << setfill(' ') << sml->operationCode << endl
-       << setfill(' ') << setw(20) << "operand" << setw(8)
-       << setfill(' ') << sml->operand << endl
-       << endl << endl;
+  int i, j;
+  printf("\n\nREGISTERS:\n");
+  /*
+    << setfill(' ') << setw(20) << "Accumulator" << setw(8)
+    << setfill(' ') << sml->accumulator << endl
+    << setfill(' ') << setw(20) << "instructionPointer" << setw(8)
+    << setfill(' ') << sml->counter << endl    
+    << setfill(' ') << setw(20) << "instructionRegister" << setw(8)
+    << setfill(' ') << sml->instructionRegister << endl
+    << setfill(' ') << setw(20) << "operationCode" << setw(8)
+    << setfill(' ') << sml->operationCode << endl
+    << setfill(' ') << setw(20) << "operand" << setw(8)
+    << setfill(' ') << sml->operand << endl
+    << endl << endl;
   
-  cout << "MEMORY:" << endl;
-  cout << setw(10);
-  for(int i = 0; i < 10; ++ i) {
+    cout << "MEMORY:" << endl;
+    cout << setw(10);
+    for(i = 0; i < 10; ++ i) {
     cout << i << setw(7) << "  ";
-  }
-  cout << endl;
-  for(int i = 0; i < MEMSIZE/10 ; ++i) {
-    cout << setw(3) << i*10 << " ";
-    for(int j = 0; j < 10; ++j) {
-      cout << setw(7) << sml->memory[i*10+j] << " ";
     }
     cout << endl;
-  }
+    for(i = 0; i < MEMSIZE/10 ; ++i) {
+    cout << setw(3) << i*10 << " ";
+    for(int j = 0; j < 10; ++j) {
+    cout << setw(7) << sml->memory[i*10+j] << " ";
+    }
+    cout << endl;
+    }
 
-  cout << "OBUFF:" << endl;
-  cout << setw(10);
-  for(int i = 0; i < 10; ++ i) {
+    cout << "OBUFF:" << endl;
+    cout << setw(10);
+    for(i = 0; i < 10; ++ i) {
     cout << i << setw(7) << "  ";
-  }
-  cout << endl;
-  for(int i = 0; i < MEMSIZE/10 ; ++i) {
-    if( i * 10 >= sml->obc ) {
-      break;
-    }
-    cout << setw(3) << i*10 << " ";
-    for(int j = 0; j < 10; ++j) {
-      cout << setw(7) << sml->outbuff[i*10+j] << " ";
     }
     cout << endl;
-  }
-  cout << endl;
-  //  sml->counter++;
+    for(i = 0; i < MEMSIZE/10 ; ++i) {
+    if( i * 10 >= sml->obc ) {
+    break;
+    }
+    cout << setw(3) << i*10 << " ";
+    for(j = 0; j < 10; ++j) {
+    cout << setw(7) << sml->outbuff[i*10+j] << " ";
+    }
+    cout << endl;
+    }
+    cout << endl;
+  */
   return 0;
 }
 

@@ -1,14 +1,54 @@
 #include <signal.h>
+#include <ctype.h>
 
 #include "ncurses.h"
 #include "sml.h"
-#include "sml_display.h"
+#include "sml_io.h"
 
 WINDOW *memwindow;
 WINDOW *chipwindow;
 WINDOW *messagewindow;
 WINDOW *inputwindow;
 WINDOW *outputwindow;
+
+char line[BUFFSIZE + 1];
+int buffptr = 0;
+
+void process() {
+  int input;
+  unsigned int i;
+  bool negative = false;
+
+  if( !( (line[0] == '-') || isdigit(line[0]))) {
+    return;
+  }
+
+  for( i = 0; i < BUFFSIZE; i++ ) {
+    input = 0;
+    negative = false;
+
+    if( line[i] == 0 || line[i] == '#' ) {
+      return;
+    }
+
+    if( line[i] == '-' ) {
+      negative = true;
+      i++;
+    }
+
+    while( isdigit(line[i]) ) {
+      input *= 10;
+      input += line[i] - '0';
+    }
+
+    if( !out_of_bounds(input,MINVAL,MAXVAL) ) {
+      if( negative ) {
+	input *= -1;
+      }
+      sml->memory[sml->counter++] = input;
+    }
+  }
+}
 
 void sig_winch(int in) {
   endwin();

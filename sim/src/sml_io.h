@@ -1,6 +1,8 @@
 #ifndef SML_DISPLAY_H
 #define SML_DISPLAY_H
 
+#define BUFFSIZE 80
+
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
 extern WINDOW *messagewindow;
@@ -11,7 +13,10 @@ int init_windows();
 void displaymem();
 void displaychip();
 void sig_winch(int);
+void process();
 
+extern char line[];
+extern int buffptr;
 /*****
  * Proposed window layout
  * +------------------+----+

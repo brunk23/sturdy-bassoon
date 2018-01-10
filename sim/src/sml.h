@@ -1,12 +1,9 @@
 #ifndef SML_H
 #define SML_H
 
-#include <string>
 #include "sml_shared.h"
 
 #include "ncurses.h"
-
-using std::string;
 
 struct machineState;		/* Forward declare */
 
@@ -30,10 +27,11 @@ struct machineState {
 // These functions are in the main program file
 int init_machine();
 int memory_dump();
-void error_message(string message);
+void error_message(char *message);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int address);
+int run_loop();
 
-extern machineState *sml;
+extern struct machineState *sml;
 
 #endif

@@ -1,10 +1,10 @@
 # This will make both the programs
 
-SIMC = *.cpp
+SIMC = *.c
 SIMH = *.h
 
 sml_sim: $(SIMC) $(SIMH)
-	c++ -g -Wall -lncurses -o FCC $(SIMC)
+	gcc -g -Wall -lncurses -o FCC $(SIMC)
 
 clean:
 	rm *.o

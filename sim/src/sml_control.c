@@ -1,9 +1,7 @@
-
 /*
  * Control related opcodes
  */
 
-#include <string>
 #include "sml.h"
 #include "sml_control.h"
 
@@ -44,9 +42,7 @@ int opcode_nop()
 int opcode_halt()
 {
   sml->running = false;
-  error_message( std::to_string(sml->outbuff[0]) +
-		 " :: " +
-		 std::to_string(sml->memory[sml->operand]) ); 
+error_message( "NORMAL HALT" );
   return sml->memory[sml->operand];
 }
 
