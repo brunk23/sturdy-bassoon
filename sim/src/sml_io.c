@@ -14,6 +14,21 @@ WINDOW *outputwindow;
 char line[BUFFSIZE + 1];
 int buffptr = 0;
 
+/*
+ * This will process commands and all input. Numbers
+ * will be added directly to memory where readptr is
+ * pointing.
+ *
+ * This will eventually compile very simple
+ * assembly. Ex. read ## -> 10##
+ *
+ * This will also take commands that effect the machine
+ * state.
+ * "go" (which sets the counter to 0 and runs)
+ * "continue" (which runs without changing counter)
+ * "step" (sets counter to 0 and stops after each step)
+ * "break ##" (sets a breakpoint when counter hits ##) 
+ */
 void process() {
   int input;
   unsigned int i;
@@ -28,6 +43,7 @@ void process() {
     negative = false;
 
     if( line[i] == 0 || line[i] == '#' ) {
+      buffptr = 0;
       return;
     }
 

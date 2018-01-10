@@ -51,6 +51,11 @@ int main(int argc, char *argv[])
   return returnCode;
 }
 
+/*
+ * Handle running the machine. We might need a buffer for numbers
+ * that haven't been read, yet. We also could use a buffer for
+ * breakpoints.
+ */
 int run_loop() {
   unsigned int returnCode;
   int n, key;
