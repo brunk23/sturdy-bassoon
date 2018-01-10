@@ -5,6 +5,11 @@
 #include "sml.h"
 #include "sml_memory.h"
 
+/*
+ * Add all input and string processing stuff here.  Handle all
+ * complete strings.  Move process(line) into here.
+ */
+
 // load operation
 int opcode_load()
 {

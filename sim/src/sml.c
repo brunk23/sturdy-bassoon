@@ -94,33 +94,9 @@ int main(int argc, char *argv[])
 
   cout << smlReal.counter << ": ";
   while( cin >> line ) {
-    if( line[0] == 'g' || line[0] =='G') {
-      cout << "CODE: ";
-      cin >> line;
-      returnCode = 0;
-      n = 0;
-      if( line[0] == '-' ) {
-	debug = true;
-	n++;
-      }
-      while( n < line.length() ) {
-	if( line[n] >= '0' && line[n] <= '9' ) {
-	  returnCode *= 10;
-	  returnCode += line[n] - '0';
-	  n++;
-	} else {
-	  break;
-	}
-      }
-      if( debug ) {
-	returnCode *= -1;
-	debug = false;
-      }
-      sml->outbuff[0] = returnCode;
-      sml->obc++;
+    if(line[0] == 'g' || line[0] =='G') {
       break;
     }
-    
     process(line);
     cout << smlReal.counter << ": ";
   }
