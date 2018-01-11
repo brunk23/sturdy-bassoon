@@ -92,6 +92,12 @@ int init_windows() {
   getmaxyx(stdscr, height, width);
   resize_out_buffer(height - 2);
 
+  if( height < MINHEIGHT || width < MINWIDTH ) {
+    endwin();
+    fprintf(stderr,"FATAL: INSUFFICIENT SCREEN SIZE\n");
+    abort();
+  }
+
   /*
    * These set the input handling up correctly
    */

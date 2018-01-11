@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #include "sml.h"
 #include "sml_math.h"
@@ -129,7 +130,11 @@ int run_loop() {
       sml->instructionRegister = sml->memory[sml->counter];
       sml->operationCode = sml->instructionRegister / OPFACT;
       sml->operand = sml->instructionRegister % OPFACT;
-      returnCode=sml->inst_tble[sml->operationCode]();
+      if(sml->operationCode > 0) {
+	returnCode=sml->inst_tble[sml->operationCode]();
+      } else {
+	opcode_invalid();
+      }
     }
   }
   return returnCode;

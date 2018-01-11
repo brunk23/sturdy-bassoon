@@ -2,6 +2,8 @@
 #define SML_DISPLAY_H
 
 #define BUFFSIZE 80
+#define MINWIDTH 85
+#define MINHEIGHT 24
 
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
