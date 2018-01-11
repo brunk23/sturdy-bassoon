@@ -23,8 +23,10 @@ int main(int argc, char *argv[])
     return returnCode;
   }
   initscr();
+  refresh();
   init_windows();
   signal(SIGWINCH, sig_winch);
+  signal(SIGINT, sig_int);
 
   displaychip();
   displaymem();
@@ -59,37 +61,42 @@ int main(int argc, char *argv[])
 int run_loop() {
   unsigned int returnCode;
   int n, key, i;
+  bool update = true;
 
   n = 1;
   sml->counter = 0;
   sml->running = false;
   while ( n ) {
+    if( update) {
+      updatescreen();
+    }
+    update = false;
+
     key = getch();
     if( key == '\n' ) {
-      werase(inputwindow);
-      wrefresh(inputwindow);
       process();
       for( i = 0; i < BUFFSIZE; i++ ) {
 	line[i] = 0;
       }
-      displaymem();
-      displaychip();
+      update = true;
       continue;
     }
     if( key == 'q' ) {
       n = 0;
     }
+    if(key == 7 ) {
+      sml->counter = 0;
+      sml->running = true;
+      continue;
+    }
     if( key != ERR ) {
+      update = true;
       line[buffptr] = key;
       buffptr++;
       if(buffptr == BUFFSIZE-1) {
 	buffptr--;
       }
       line[buffptr] = 0;
-      mvwprintw(inputwindow, 2, 2, "%s", line);
-      wrefresh(inputwindow);
-      displaymem();
-      displaychip();
     }
 
     if(sml->counter == MEMSIZE) {
@@ -98,6 +105,7 @@ int run_loop() {
       break;
     }
     if( sml->running ) {
+      update = true;
       sml->instructionRegister = sml->memory[sml->counter];
       sml->operationCode = sml->instructionRegister / OPFACT;
       sml->operand = sml->instructionRegister % OPFACT;

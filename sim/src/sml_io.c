@@ -76,12 +76,16 @@ void sig_winch(int in) {
   displaychip();
 }
 
+void sig_int(int in) {
+  sml->running = false;
+  displaychip();
+}
+
 int init_windows() {
   int height, width;
 
   getmaxyx(stdscr, height, width);
   nodelay(stdscr, TRUE);
-  cbreak();
   noecho();
   chipwindow = newwin(3, width-10, 0, 0);
   messagewindow = newwin(5, width-10, 3, 0);
@@ -107,8 +111,19 @@ int init_windows() {
   return 0;
 }
 
+void updatescreen() {
+  displaymem();
+  displaychip();
+  werase(inputwindow);
+  wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwprintw(inputwindow, 1, 2, "%s", line);
+ wrefresh(inputwindow);
+}
+
 void displaymem() {
   int i;
+  werase(memwindow);
+  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
   for( i = 0; i < MEMSIZE; i++ ) {
     if( (i % 10) == 0 ) {
@@ -124,11 +139,18 @@ void displaymem() {
 }
 
 void displaychip() {
+  werase(chipwindow);
+  wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->counter);
   if(sml->accumulator >= 0 ) {
     mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->accumulator);
   } else {
     mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->accumulator);
+  }
+  if(sml->running == true) {
+    mvwprintw(chipwindow, 1, 40, "RUNNING");
+  } else {
+    mvwprintw(chipwindow, 1, 40, "HALTED");
   }
   wrefresh(chipwindow);
 }

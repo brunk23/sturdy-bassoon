@@ -13,7 +13,9 @@ int init_windows();
 void displaymem();
 void displaychip();
 void sig_winch(int);
+void sig_int(int);
 void process();
+void updatescreen();
 
 extern char line[];
 extern int buffptr;
