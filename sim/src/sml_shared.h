@@ -12,13 +12,14 @@
  *   Extended Opcodes Include: INC, DEC, MOD
  *
  *   STEP, GO, STOP, BREAK, CONTINUE are simulator commands
+ *   These values will never be valid memory values
  */
 enum OPCODES {
   READ = 10, WRITE,
   LOAD = 20, STORE,
   ADD = 30, SUBTRACT, DIVIDE, MULTIPLY, MOD, INC, DEC,
   BRANCH = 40, BRANCHNEG, BRANCHZERO, HALT,
-  STEP = 100, GO, STOP, BREAK, CONTINUE
+  STEP = 10000, GO, STOP, BREAK, CONTINUE
 };
 
 #endif
