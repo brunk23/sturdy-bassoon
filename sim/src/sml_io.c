@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "ncurses.h"
 #include "sml.h"
@@ -10,6 +11,10 @@ WINDOW *chipwindow;
 WINDOW *messagewindow;
 WINDOW *inputwindow;
 WINDOW *outputwindow;
+
+struct out_buffer *out_buffer_head = 0;
+struct out_buffer *out_buffer_tail = 0;
+int out_buffer_max_length = 0;
 
 char line[BUFFSIZE + 1];
 int buffptr = 0;
@@ -85,41 +90,78 @@ int init_windows() {
   int height, width;
 
   getmaxyx(stdscr, height, width);
+  resize_out_buffer(height - 2);
+
+  /*
+   * These set the input handling up correctly
+   */
   nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
   cbreak();
   noecho();
+
+  /*
+   * Define sizes of windows
+   */
   chipwindow = newwin(3, width-10, 0, 0);
   messagewindow = newwin(5, width-10, 3, 0);
   memwindow = newwin(13, width-10, 8, 0);
   inputwindow = newwin(3, width-10, 21, 0);
   outputwindow = newwin(height, 10, 0, width - 10);
+
+  /*
+   * They get borders
+   */
   wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+
+  /*
+   * Add titles to each window
+   */
   mvwaddstr(chipwindow, 0, width/2 - 10, "Simpletron");
   mvwaddstr(outputwindow, 0, 2, "OUTPUT");
   mvwaddstr(memwindow, 0, width/2 - 8, "MEMORY");
   mvwaddstr(inputwindow, 0, width/2 - 7, "INPUT");
   mvwaddstr(messagewindow, 0, width/2 - 10, "Messages");
+
+  /*
+   * Draw them on the screen
+   */
   wmove(inputwindow,1,1);
   wrefresh(chipwindow);
   wrefresh(outputwindow);
   wrefresh(memwindow);
   wrefresh(inputwindow);
   wrefresh(messagewindow);
+
   return 0;
 }
 
 void updatescreen() {
   displaymem();
   displaychip();
+  displayoutput();
   werase(inputwindow);
   wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(inputwindow, 1, 2, "%s", line);
  wrefresh(inputwindow);
+}
+
+void displayoutput() {
+  int i = 1;
+  struct out_buffer *tmp = out_buffer_head;
+  werase(outputwindow);
+  wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+
+  while(tmp) {
+    mvwprintw(outputwindow, i, 1, "%4i", tmp->value);
+    tmp = tmp->next;
+    i++;
+  }
+  wrefresh(outputwindow);
 }
 
 void displaymem() {
@@ -155,4 +197,78 @@ void displaychip() {
     mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
   }
   wrefresh(chipwindow);
+}
+
+/*
+ * As items come in, they are added to the tail.
+ * If if list is larger than the max length, throw out
+ * first value.
+ * Abort if malloc fails.
+ */
+void output_value(int value) {
+  int curr_length;
+  struct out_buffer *tmp;
+
+  if( out_buffer_max_length == 0 ) {
+    endwin();
+    fprintf(stderr,"FATAL: we got no lines man, no lines!\n");
+    abort();
+  }
+
+  curr_length = out_buff_len();
+  if( curr_length == out_buffer_max_length ) {
+    tmp = out_buffer_head;
+    out_buffer_head = out_buffer_head->next;
+    free(tmp);
+  }
+
+  if( 0 == (tmp = malloc(sizeof(struct out_buffer)))) {
+    endwin();
+    fprintf(stderr,"FATAL: malloc failed to get memory!\n");
+    abort();
+  }
+
+  tmp->value = value;
+  tmp->next = 0;
+
+  if( out_buffer_head == 0 ) {
+    out_buffer_head = tmp;
+    out_buffer_tail = tmp;
+    return;
+  }
+
+  out_buffer_tail->next = tmp;
+  out_buffer_tail = tmp;
+}
+
+/*
+ * This is only called when the program starts and on
+ * resize events
+ */
+void resize_out_buffer(int max) {
+  int i, curr_length = 0;
+  struct out_buffer *tmp;
+
+  curr_length = out_buff_len();
+  out_buffer_max_length = max;
+
+  if( curr_length > max ) {
+    for(i = 0; i < (curr_length - max); i++) {
+      tmp = out_buffer_head;
+      out_buffer_head = out_buffer_head->next;
+      free(tmp);
+    }
+  }
+}
+
+int out_buff_len() {
+  int curr_length = 0;
+  struct out_buffer *tmp = out_buffer_head;
+
+  while(tmp) {
+    curr_length++;
+    tmp = tmp->next;
+  }
+
+  return curr_length;
 }

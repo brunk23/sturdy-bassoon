@@ -16,9 +16,7 @@ struct machineState {
   int operationCode;
   int operand;
   int inbuff[MEMSIZE];
-  int outbuff[MEMSIZE];
   int ibc;
-  int obc;
   int memory[MEMSIZE];
   opPtr inst_tble[MAXOP];
   bool running;

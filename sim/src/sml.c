@@ -49,6 +49,16 @@ int main(int argc, char *argv[])
   } else {
     printf("\n\n");
   }
+
+  /*
+   * Properly free the resources we allocated
+   */
+  while(out_buffer_head) {
+    out_buffer_tail = out_buffer_head;
+    out_buffer_head = out_buffer_head->next;
+    free(out_buffer_tail);
+  }
+
   endwin();
   return returnCode;
 }
@@ -167,10 +177,8 @@ int init_machine()
   sml->operand = 0;
   sml->running = false;
   sml->ibc = 0;
-  sml->obc = 0;
   for(i = 0; i < MEMSIZE; ++i) {
     sml->inbuff[i] = 0;
-    sml->outbuff[i] = 0;
     sml->memory[i] = 0;
   }
   return 0;

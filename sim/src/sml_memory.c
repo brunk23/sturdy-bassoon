@@ -4,6 +4,7 @@
 
 #include "sml.h"
 #include "sml_memory.h"
+#include "sml_io.h"
 
 /*
  * Add all input and string processing stuff here.  Handle all
@@ -21,7 +22,7 @@ int opcode_load()
 // store operation
 int opcode_store()
 {
-  sml->counter++;		// increment the instruction counter	
+  sml->counter++;		// increment the instruction counter
   sml->memory[sml->operand] = sml->accumulator;
   return 0;
 }
@@ -40,40 +41,19 @@ int opcode_read()
     2007, -826, -3370, 5899, 8, 6700, -8545, -6639, 8788, -9038,
     -2309, 198, 1926, -6315, -9142, -9344, 8927, 2642, 5397, 2704,
     8120, 1553, -9745, -3243, 7441, 1848, -5353, -6898, -5518, 1099};
-  int input, i;
+  int input;
 
-  if( sml->outbuff[0] == 0 ) {
-    error_message("NO DATA RECEIVED!!!");
-    sml->running = false;
-    return 1;
-  }
-
-  sml->ibc += sml->outbuff[0];
-  sml->ibc += sml->outbuff[0] / OPFACT;
-  sml->ibc %= MEMSIZE;
-  if( sml->ibc < 0 ) {
-    sml->ibc *= -1;
-  }
   input = buffer[sml->ibc];
+  sml->ibc++;
 
-  if( sml->obc > 1 ) {
-    // This is the second read
-    for(i = 0; i < sml->obc; i++ ) {
-      input += i* (23 + sml->outbuff[i]);
-      input %= 9797;
-    }
-  }
-
-  sml->counter++;		// increment the instruction counter	
+  sml->counter++;
   sml->memory[sml->operand] = input;
   return 0;
 }
   
 int opcode_write()
 {
-  sml->outbuff[sml->obc] = sml->memory[sml->operand];
-  sml->obc++;
-  sml->obc %= MEMSIZE;
+  output_value(sml->memory[sml->operand]);
   sml->counter++;
   return 0;
 }
