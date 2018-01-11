@@ -178,6 +178,8 @@ int init_machine()
 
 void error_message(char *message)
 {
+  werase(messagewindow);
+  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(messagewindow, 2, 2, message);
   wrefresh(messagewindow);
 }
