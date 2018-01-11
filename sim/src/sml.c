@@ -15,7 +15,6 @@ bool debug = false;
 int main(int argc, char *argv[])
 {
   int returnCode = 0, i;
-  struct machineState smlReal;
 
   out_buffer_head = 0;
   out_buffer_tail = 0;
@@ -26,7 +25,11 @@ int main(int argc, char *argv[])
     line[i] = 0;
   }
 
-  sml = &smlReal;
+  sml = (struct machineState *)malloc(sizeof(struct machineState));
+  if( 0 == sml ) {
+    fprintf(stderr,"ERROR: No memeory for SML Machine.\n");
+    return 1;
+  }
 
   // If there's an error making the machine, quit.
   if ( (returnCode = init_machine()) ) {
@@ -68,14 +71,20 @@ void cleanup() {
     free(out_buffer_tail);
   }
 
-  endwin();
+  if( !isendwin() ) {
+    endwin();
+  }
 
-  if( debug ) {
-    // we only dump the memory if we input the file by hand
-    // or we request it
-    memory_dump();
-  } else {
-    printf("\n\n");
+  if(sml) {
+    if( debug ) {
+      // we only dump the memory if we input the file by hand
+      // or we request it
+      memory_dump();
+    }
+  }
+
+  if( sml ) {
+    free(sml);
   }
 }
 
@@ -208,9 +217,8 @@ int init_machine()
 void error_message(char *message)
 {
   werase(messagewindow);
-  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(messagewindow, 2, 2, message);
-  wrefresh(messagewindow);
+  wnoutrefresh(messagewindow);
 }
 
 int memory_dump()

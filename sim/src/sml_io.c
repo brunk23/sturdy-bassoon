@@ -87,10 +87,9 @@ int token(char *str) {
 void sig_winch(int in) {
   endwin();
   refresh();
-  initscr();
+  erase();
   init_windows();
-  displaymem();
-  displaychip();
+  updatescreen();
 }
 
 void sig_int(int in) {
@@ -104,11 +103,6 @@ int init_windows() {
   getmaxyx(stdscr, height, width);
   resize_out_buffer(height - 2);
 
-  if( height < MINHEIGHT || width < MINWIDTH ) {
-    wrefresh(stdscr);
-    exit(1);
-  }
-
   /*
    * These set the input handling up correctly
    */
@@ -116,6 +110,12 @@ int init_windows() {
   keypad(stdscr, TRUE);
   cbreak();
   noecho();
+  curs_set(0);
+
+  if( height < MINHEIGHT || width < MINWIDTH ) {
+    endwin();
+    exit(1);
+  }
 
   /*
    * Define sizes of windows
@@ -126,13 +126,27 @@ int init_windows() {
   inputwindow = newwin(3, width-10, 21, 0);
   outputwindow = newwin(height, 10, 0, width - 10);
 
-  /*
-   * They get borders
-   */
+  return 0;
+}
+
+void updatescreen() {
+  int height, width;
+
+  werase(chipwindow);
+  werase(outputwindow);
+  werase(memwindow);
+  werase(inputwindow);
+
+  getmaxyx(stdscr, height, width);
+
+  displaymem();
+  displaychip();
+  displayoutput();
+
   wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
 
   /*
@@ -144,47 +158,30 @@ int init_windows() {
   mvwaddstr(inputwindow, 0, width/2 - 7, "INPUT");
   mvwaddstr(messagewindow, 0, width/2 - 10, "Messages");
 
-  /*
-   * Draw them on the screen
-   */
-  wmove(inputwindow,1,1);
-  wrefresh(chipwindow);
-  wrefresh(outputwindow);
-  wrefresh(memwindow);
-  wrefresh(inputwindow);
-  wrefresh(messagewindow);
+  mvwprintw(inputwindow, 1, 2, "%s_", line);
 
-  return 0;
-}
-
-void updatescreen() {
-  displaymem();
-  displaychip();
-  displayoutput();
-  werase(inputwindow);
-  wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  mvwprintw(inputwindow, 1, 2, "%s", line);
- wrefresh(inputwindow);
+  wnoutrefresh(chipwindow);
+  wnoutrefresh(outputwindow);
+  wnoutrefresh(memwindow);
+  wnoutrefresh(inputwindow);
+  wnoutrefresh(messagewindow);
+  doupdate();
 }
 
 void displayoutput() {
   int i = 1;
   struct out_buffer *tmp = out_buffer_head;
-  werase(outputwindow);
-  wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
 
   while(tmp) {
     mvwprintw(outputwindow, i, 2, "%4i", tmp->value);
     tmp = tmp->next;
     i++;
   }
-  wrefresh(outputwindow);
 }
 
 void displaymem() {
   int i;
-  werase(memwindow);
-  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+
   mvwprintw(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
   for( i = 0; i < MEMSIZE; i++ ) {
     if( (i % 10) == 0 ) {
@@ -196,12 +193,9 @@ void displaymem() {
       mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "-%04i",-1*sml->memory[i]);
     }
   }
-  wrefresh(memwindow);
 }
 
 void displaychip() {
-  werase(chipwindow);
-  wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->counter);
   if(sml->accumulator >= 0 ) {
     mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->accumulator);
@@ -213,7 +207,6 @@ void displaychip() {
   } else {
     mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
   }
-  wrefresh(chipwindow);
 }
 
 /*
