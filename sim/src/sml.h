@@ -37,6 +37,7 @@ void error_message(char *message);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int address);
 int run_loop();
+void cleanup();
 
 extern struct machineState *sml;
 

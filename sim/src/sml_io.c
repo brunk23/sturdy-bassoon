@@ -12,9 +12,9 @@ WINDOW *messagewindow;
 WINDOW *inputwindow;
 WINDOW *outputwindow;
 
-struct out_buffer *out_buffer_head = 0;
-struct out_buffer *out_buffer_tail = 0;
-int out_buffer_max_length = 0;
+struct out_buffer *out_buffer_head;
+struct out_buffer *out_buffer_tail;
+int out_buffer_max_length;
 
 char line[BUFFSIZE + 1];
 int buffptr = 0;
@@ -105,9 +105,7 @@ int init_windows() {
   resize_out_buffer(height - 2);
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
-    endwin();
-    fprintf(stderr,"FATAL: INSUFFICIENT SCREEN SIZE\n");
-    abort();
+    exit(1);
   }
 
   /*
@@ -221,16 +219,14 @@ void displaychip() {
  * As items come in, they are added to the tail.
  * If if list is larger than the max length, throw out
  * first value.
- * Abort if malloc fails.
+ * exit if malloc fails.
  */
 void output_value(int value) {
   int curr_length;
   struct out_buffer *tmp;
 
   if( out_buffer_max_length == 0 ) {
-    endwin();
-    fprintf(stderr,"FATAL: we got no lines man, no lines!\n");
-    abort();
+    exit(1);
   }
 
   curr_length = out_buff_len();
@@ -241,9 +237,7 @@ void output_value(int value) {
   }
 
   if( 0 == (tmp = malloc(sizeof(struct out_buffer)))) {
-    endwin();
-    fprintf(stderr,"FATAL: malloc failed to get memory!\n");
-    abort();
+    exit(1);
   }
 
   tmp->value = value;

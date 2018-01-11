@@ -10,11 +10,21 @@
 
 struct machineState *sml;
 
+bool debug = false;
+
 int main(int argc, char *argv[])
 {
-  int returnCode = 0;
+  int returnCode = 0, i;
   struct machineState smlReal;
-  bool debug = false;
+
+  out_buffer_head = 0;
+  out_buffer_tail = 0;
+  out_buffer_max_length = 0;
+  buffptr = 0;
+
+  for( i = 0; i < BUFFSIZE+1; i++) {
+    line[i] = 0;
+  }
 
   sml = &smlReal;
 
@@ -23,16 +33,19 @@ int main(int argc, char *argv[])
     fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
     return returnCode;
   }
+
   initscr();
   refresh();
   init_windows();
+
   signal(SIGWINCH, sig_winch);
   signal(SIGINT, sig_int);
+  atexit(cleanup);
 
   displaychip();
   displaymem();
 
-  error_message("FCC booting . . .");
+  error_message("FCC successfully booted . . .");
 
   if ( argc > 1 ) {
     debug = true;
@@ -42,6 +55,10 @@ int main(int argc, char *argv[])
 
   run_loop();
 
+  return returnCode;
+}
+
+void cleanup() {
   /*
    * Properly free the resources we allocated
    */
@@ -60,8 +77,6 @@ int main(int argc, char *argv[])
   } else {
     printf("\n\n");
   }
-
-  return returnCode;
 }
 
 /*
