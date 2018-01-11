@@ -72,6 +72,18 @@ void process() {
   }
 }
 
+/*
+ * This will look for commands to assemble or
+ * execute and will return a token (either a
+ * command that can be assembled or a command
+ * that will control the simulator).
+ */
+int token(char *str) {
+  int val = INVALID;
+
+  return val;
+}
+
 void sig_winch(int in) {
   endwin();
   refresh();

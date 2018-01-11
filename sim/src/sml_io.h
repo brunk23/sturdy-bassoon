@@ -1,6 +1,7 @@
 #ifndef SML_DISPLAY_H
 #define SML_DISPLAY_H
 
+#define INVALID -1
 #define BUFFSIZE 80
 #define MINWIDTH 85
 #define MINHEIGHT 24
@@ -22,6 +23,7 @@ void updatescreen();
 void output_value(int);
 void resize_out_buffer(int);
 int out_buff_len();
+int token(char *);
 
 struct out_buffer {
   int value;
