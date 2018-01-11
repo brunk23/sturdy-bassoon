@@ -45,6 +45,7 @@ int opcode_read()
 
   input = buffer[sml->ibc];
   sml->ibc++;
+  sml->ibc %= MEMSIZE;
 
   sml->counter++;
   sml->memory[sml->operand] = input;
