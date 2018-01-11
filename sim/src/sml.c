@@ -35,21 +35,12 @@ int main(int argc, char *argv[])
   error_message("FCC booting . . .");
 
   if ( argc > 1 ) {
-    memory_dump();
     debug = true;
   } else {
     debug = false;
   }
 
   run_loop();
-
-  if( debug ) {
-    // we only dump the memory if we input the file by hand
-    // or we request it
-    memory_dump();
-  } else {
-    printf("\n\n");
-  }
 
   /*
    * Properly free the resources we allocated
@@ -61,6 +52,15 @@ int main(int argc, char *argv[])
   }
 
   endwin();
+
+  if( debug ) {
+    // we only dump the memory if we input the file by hand
+    // or we request it
+    memory_dump();
+  } else {
+    printf("\n\n");
+  }
+
   return returnCode;
 }
 
@@ -130,7 +130,7 @@ int run_loop() {
       sml->instructionRegister = sml->memory[sml->counter];
       sml->operationCode = sml->instructionRegister / OPFACT;
       sml->operand = sml->instructionRegister % OPFACT;
-      if(sml->operationCode < 0) {
+      if(sml->operationCode < 0 || sml->operationCode >= OPFACT) {
 	opcode_invalid();
       } else {
 	returnCode=sml->inst_tble[sml->operationCode]();
@@ -200,52 +200,27 @@ void error_message(char *message)
 int memory_dump()
 {
   int i, j;
-  printf("\n\nREGISTERS:\n");
-  /*
-    << setfill(' ') << setw(20) << "Accumulator" << setw(8)
-    << setfill(' ') << sml->accumulator << endl
-    << setfill(' ') << setw(20) << "instructionPointer" << setw(8)
-    << setfill(' ') << sml->counter << endl    
-    << setfill(' ') << setw(20) << "instructionRegister" << setw(8)
-    << setfill(' ') << sml->instructionRegister << endl
-    << setfill(' ') << setw(20) << "operationCode" << setw(8)
-    << setfill(' ') << sml->operationCode << endl
-    << setfill(' ') << setw(20) << "operand" << setw(8)
-    << setfill(' ') << sml->operand << endl
-    << endl << endl;
-  
-    cout << "MEMORY:" << endl;
-    cout << setw(10);
-    for(i = 0; i < 10; ++ i) {
-    cout << i << setw(7) << "  ";
-    }
-    cout << endl;
-    for(i = 0; i < MEMSIZE/10 ; ++i) {
-    cout << setw(3) << i*10 << " ";
-    for(int j = 0; j < 10; ++j) {
-    cout << setw(7) << sml->memory[i*10+j] << " ";
-    }
-    cout << endl;
-    }
-
-    cout << "OBUFF:" << endl;
-    cout << setw(10);
-    for(i = 0; i < 10; ++ i) {
-    cout << i << setw(7) << "  ";
-    }
-    cout << endl;
-    for(i = 0; i < MEMSIZE/10 ; ++i) {
-    if( i * 10 >= sml->obc ) {
-    break;
-    }
-    cout << setw(3) << i*10 << " ";
+  printf("REGISTERS\n");
+  printf("Accumulator:\t\t%04i\n", sml->accumulator);
+  printf("instructionPointer:\t%02i\n", sml->counter);
+  printf("instructionRegister:\t%04i\n", sml->instructionRegister);
+  printf("operationCode:\t\t%02i\n", sml->operationCode);
+  printf("operand:\t\t%02i\n\nMEMORY:", sml->operand);
+  for(i = 0; i < 10; ++ i) {
+    printf("  %02i   ", i);
+  }
+  printf("\n");
+  for(i = 0; i < MEMSIZE/10 ; ++i) {
+    printf("   %02i  ", i*10);
     for(j = 0; j < 10; ++j) {
-    cout << setw(7) << sml->outbuff[i*10+j] << " ";
+      if(sml->memory[i*10+j] < 0 ) {
+	printf("-%04i  ",-sml->memory[i*10+j]);
+      } else {
+	printf(" %04i  ",sml->memory[i*10+j]);;
+      }
     }
-    cout << endl;
-    }
-    cout << endl;
-  */
+    printf("\n");
+  }
   return 0;
 }
 

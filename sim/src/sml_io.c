@@ -163,7 +163,7 @@ void displayoutput() {
   wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
 
   while(tmp) {
-    mvwprintw(outputwindow, i, 1, "%4i", tmp->value);
+    mvwprintw(outputwindow, i, 2, "%4i", tmp->value);
     tmp = tmp->next;
     i++;
   }
