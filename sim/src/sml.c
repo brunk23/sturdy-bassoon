@@ -130,10 +130,10 @@ int run_loop() {
       sml->instructionRegister = sml->memory[sml->counter];
       sml->operationCode = sml->instructionRegister / OPFACT;
       sml->operand = sml->instructionRegister % OPFACT;
-      if(sml->operationCode > 0) {
-	returnCode=sml->inst_tble[sml->operationCode]();
-      } else {
+      if(sml->operationCode < 0) {
 	opcode_invalid();
+      } else {
+	returnCode=sml->inst_tble[sml->operationCode]();
       }
     }
   }
