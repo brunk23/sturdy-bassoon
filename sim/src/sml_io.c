@@ -105,6 +105,7 @@ int init_windows() {
   resize_out_buffer(height - 2);
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
+    wrefresh(stdscr);
     exit(1);
   }
 
