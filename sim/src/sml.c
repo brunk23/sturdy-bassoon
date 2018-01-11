@@ -58,15 +58,38 @@ int main(int argc, char *argv[])
  */
 int run_loop() {
   unsigned int returnCode;
-  int n, key;
+  int n, key, i;
 
   n = 1;
   sml->counter = 0;
-  sml->running = true;
+  sml->running = false;
   while ( n ) {
     key = getch();
+    if( key == '\n' ) {
+      werase(inputwindow);
+      wrefresh(inputwindow);
+      process();
+      for( i = 0; i < BUFFSIZE; i++ ) {
+	line[i] = 0;
+      }
+      displaymem();
+      displaychip();
+      continue;
+    }
     if( key == 'q' ) {
       n = 0;
+    }
+    if( key != ERR ) {
+      line[buffptr] = key;
+      buffptr++;
+      if(buffptr == BUFFSIZE-1) {
+	buffptr--;
+      }
+      line[buffptr] = 0;
+      mvwprintw(inputwindow, 2, 2, "%s", line);
+      wrefresh(inputwindow);
+      displaymem();
+      displaychip();
     }
 
     if(sml->counter == MEMSIZE) {
@@ -74,13 +97,11 @@ int run_loop() {
       returnCode = 1;		// magic number again
       break;
     }
-    sml->instructionRegister = sml->memory[sml->counter];
-    sml->operationCode = sml->instructionRegister / OPFACT;
-    sml->operand = sml->instructionRegister % OPFACT;
-    returnCode=sml->inst_tble[sml->operationCode]();
-    if( key != ERR ) {
-      displaymem();
-      displaychip();
+    if( sml->running ) {
+      sml->instructionRegister = sml->memory[sml->counter];
+      sml->operationCode = sml->instructionRegister / OPFACT;
+      sml->operand = sml->instructionRegister % OPFACT;
+      returnCode=sml->inst_tble[sml->operationCode]();
     }
   }
   return returnCode;

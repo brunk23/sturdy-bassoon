@@ -34,17 +34,17 @@ void process() {
   unsigned int i;
   bool negative = false;
 
-  if( !( (line[0] == '-') || isdigit(line[0]))) {
-    return;
-  }
-
+  buffptr = 0;
   for( i = 0; i < BUFFSIZE; i++ ) {
     input = 0;
     negative = false;
 
     if( line[i] == 0 || line[i] == '#' ) {
-      buffptr = 0;
       return;
+    }
+
+    if( line[i] == ' ' || line[i] == '\t' ) {
+      continue;
     }
 
     if( line[i] == '-' ) {
@@ -55,9 +55,10 @@ void process() {
     while( isdigit(line[i]) ) {
       input *= 10;
       input += line[i] - '0';
+      i++;
     }
 
-    if( !out_of_bounds(input,MINVAL,MAXVAL) ) {
+    if( !out_of_bounds(input, 0, MAXVAL) ) {
       if( negative ) {
 	input *= -1;
       }
@@ -80,6 +81,7 @@ int init_windows() {
 
   getmaxyx(stdscr, height, width);
   nodelay(stdscr, TRUE);
+  cbreak();
   noecho();
   chipwindow = newwin(3, width-10, 0, 0);
   messagewindow = newwin(5, width-10, 3, 0);
