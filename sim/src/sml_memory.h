@@ -5,7 +5,5 @@ int opcode_load();
 int opcode_store();
 int opcode_read();
 int opcode_write();
-int opcode_sread();
-int opcode_swrite();
 
 #endif

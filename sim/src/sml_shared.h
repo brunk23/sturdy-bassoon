@@ -9,12 +9,7 @@
 
 /*
  * Not all these opcodes were part of the original spec.
- *   Extended Opcodes Include: INC, DEC, MOD, DUMP, NOP
- *   A_opcodes are indirect opcodes. They set a flag
- *   indirect in the machine state. The memory location
- *   pointed at is loaded, high 3 digits are added to the
- *   low 3 digits and that is used as the actual memory
- *   location
+ *   Extended Opcodes Include: INC, DEC, MOD
  */
 enum OPCODES {
   READ = 10, WRITE,
