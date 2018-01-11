@@ -184,6 +184,7 @@ int init_machine()
   sml->ibc = 0;
   for(i = 0; i < MEMSIZE; ++i) {
     sml->inbuff[i] = 0;
+    sml->breaktable[i] = 0;
     sml->memory[i] = 0;
   }
   return 0;
