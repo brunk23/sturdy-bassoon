@@ -73,24 +73,34 @@ int run_loop() {
     update = false;
 
     key = getch();
-    if( key == '\n' ) {
-      process();
-      for( i = 0; i < BUFFSIZE; i++ ) {
-	line[i] = 0;
-      }
-      update = true;
-      continue;
-    }
-    if( key == 'q' ) {
-      n = 0;
-    }
-    if(key == 7 ) {
-      sml->counter = 0;
-      sml->running = true;
-      continue;
-    }
     if( key != ERR ) {
       update = true;
+      if( key == '\n' ) {
+	process();
+	for( i = 0; i < BUFFSIZE; i++ ) {
+	  line[i] = 0;
+	}
+	continue;
+      }
+      if( key == 'q' ) {
+	break;
+      }
+
+      // CTRL-G == 7 and runs the machine
+      if(key == 7 ) {
+	sml->counter = 0;
+	sml->running = true;
+	continue;
+      }
+
+      if( key == KEY_BACKSPACE || key == KEY_DC ) {
+	if( buffptr > 0 ) {
+	  buffptr--;
+	  line[buffptr] = 0;
+	}
+	continue;
+      }
+
       line[buffptr] = key;
       buffptr++;
       if(buffptr == BUFFSIZE-1) {

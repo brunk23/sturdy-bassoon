@@ -86,6 +86,8 @@ int init_windows() {
 
   getmaxyx(stdscr, height, width);
   nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
+  cbreak();
   noecho();
   chipwindow = newwin(3, width-10, 0, 0);
   messagewindow = newwin(5, width-10, 3, 0);
@@ -148,9 +150,9 @@ void displaychip() {
     mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->accumulator);
   }
   if(sml->running == true) {
-    mvwprintw(chipwindow, 1, 40, "RUNNING");
+    mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
   } else {
-    mvwprintw(chipwindow, 1, 40, "HALTED");
+    mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
   }
   wrefresh(chipwindow);
 }
