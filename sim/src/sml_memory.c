@@ -45,7 +45,7 @@ int opcode_read()
   sml->memory[sml->operand] = input;
   return 0;
 }
-  
+
 int opcode_write()
 {
   output_value(sml->memory[sml->operand]);
@@ -56,7 +56,7 @@ int opcode_write()
 bool is_valid_address(int address) {
   return !(out_of_bounds(address, 0, MEMSIZE - 1));
 }
-			       
+
 /*
  * Determine if a certain value is out of range. Useful for determining
  * memory validity and other functions.

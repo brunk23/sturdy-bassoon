@@ -18,7 +18,7 @@ int buffptr = 0;
  * "go" (which sets the counter to 0 and runs)
  * "continue" (which runs without changing counter)
  * "step" (sets counter to 0 and stops after each step)
- * "break ##" (sets a breakpoint when counter hits ##) 
+ * "break ##" (sets a breakpoint when counter hits ##)
  */
 void process() {
   int input;

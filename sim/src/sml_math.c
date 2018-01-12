@@ -52,7 +52,7 @@ int opcode_mod()
     sml->running = false;
     return -1;
   }
-  sml->counter++;	
+  sml->counter++;
   sml->accumulator %= sml->memory[sml->operand];
   return 0;
 }

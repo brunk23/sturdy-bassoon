@@ -14,7 +14,7 @@ int opcode_branch()
 
 int opcode_branch_neg()
 {
-  if( sml->accumulator < 0 ) {	
+  if( sml->accumulator < 0 ) {
     sml->counter = sml->operand;
   } else {
     sml->counter++;
@@ -24,7 +24,7 @@ int opcode_branch_neg()
 
 int opcode_branch_zero()
 {
-  if( sml->accumulator == 0 ) {	
+  if( sml->accumulator == 0 ) {
     sml->counter = sml->operand;
   } else {
     sml->counter++;

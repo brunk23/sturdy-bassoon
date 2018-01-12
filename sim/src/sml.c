@@ -164,7 +164,7 @@ int init_machine()
   }
 
   // These are the currently supported instructions
-	
+
   // Arithmatic
   sml->inst_tble[ADD]=opcode_add;
   sml->inst_tble[SUBTRACT]=opcode_subtract;
@@ -189,7 +189,7 @@ int init_machine()
   // Extended opcodes
   sml->inst_tble[INC]=opcode_inc;
   sml->inst_tble[DEC]=opcode_dec;
-  
+
   sml->accumulator = 0;
   sml->counter = 0;
   sml->instructionRegister = 0;
