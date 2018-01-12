@@ -3,7 +3,6 @@
  */
 
 #include "sml.h"
-#include "sml_control.h"
 
 // branch operation
 int opcode_branch()

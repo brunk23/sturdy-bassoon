@@ -4,8 +4,6 @@
 
 #include "ncurses.h"
 #include "sml.h"
-#include "sml_display.h"
-#include "sml_output.h"
 
 WINDOW *memwindow;
 WINDOW *chipwindow;

@@ -1,11 +1,4 @@
-/*
- * Memory related operations
- */
-
 #include "sml.h"
-#include "sml_memory.h"
-#include "sml_display.h"
-#include "sml_output.h"
 
 /*
  * Add all input and string processing stuff here.  Handle all
@@ -15,7 +8,7 @@
 // load operation
 int opcode_load()
 {
-  sml->counter++;		// increment the instruction counter	
+  sml->counter++;		// increment the instruction counter
   sml->accumulator = sml->memory[sml->operand];
   return 0;
 }

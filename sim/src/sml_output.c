@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "sml_output.h"
 #include "sml.h"
 
 struct out_buffer *out_buffer_head;

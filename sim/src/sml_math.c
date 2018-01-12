@@ -3,7 +3,6 @@
  */
 
 #include "sml.h"
-#include "sml_math.h"
 
 // add operation
 int opcode_add()
