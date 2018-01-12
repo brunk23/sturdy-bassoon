@@ -123,11 +123,11 @@ void displaymem() {
 }
 
 void displaychip() {
-  mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->counter);
-  if(sml->accumulator >= 0 ) {
-    mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->accumulator);
+  mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->iptr);
+  if(sml->acc >= 0 ) {
+    mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->acc);
   } else {
-    mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->accumulator);
+    mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->acc);
   }
   if(sml->running == true) {
     mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");

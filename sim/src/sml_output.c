@@ -85,10 +85,10 @@ int memory_dump()
 {
   int i, j;
   printf("REGISTERS\n");
-  printf("Accumulator:\t\t%04i\n", sml->accumulator);
-  printf("instructionPointer:\t%02i\n", sml->counter);
-  printf("instructionRegister:\t%04i\n", sml->instructionRegister);
-  printf("operationCode:\t\t%02i\n", sml->operationCode);
+  printf("Accumulator:\t\t%04i\n", sml->acc);
+  printf("instructionPointer:\t%02i\n", sml->iptr);
+  printf("instruction:\t%04i\n", sml->instr);
+  printf("opcode:\t\t%02i\n", sml->opcode);
   printf("operand:\t\t%02i\n\nMEMORY:", sml->operand);
   for(i = 0; i < 10; ++ i) {
     printf("  %02i   ", i);

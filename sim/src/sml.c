@@ -10,7 +10,7 @@ bool debug = false;
 
 int main(int argc, char *argv[])
 {
-  int returnCode = 0, i;
+  int value = 0, i;
 
   out_buffer_head = 0;
   out_buffer_tail = 0;
@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
   }
 
   // If there's an error making the machine, quit.
-  if ( (returnCode = init_machine()) ) {
+  if ( (value = init_machine()) ) {
     fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
-    return returnCode;
+    return value;
   }
 
   initscr();
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
   run_loop();
 
-  return returnCode;
+  return value;
 }
 
 void cleanup() {
@@ -85,14 +85,13 @@ void cleanup() {
  * breakpoints.
  */
 int run_loop() {
-  unsigned int returnCode;
-  int n, key, i;
+  unsigned int value;
+  int key, i;
   bool update = true;
 
-  n = 1;
-  sml->counter = 0;
+  sml->iptr = 0;
   sml->running = false;
-  while ( n ) {
+  while ( true ) {
     if( update) {
       updatescreen();
     }
@@ -114,15 +113,17 @@ int run_loop() {
 
       // CTRL-G == 7 and runs the machine
       if(key == 7 ) {
-	sml->counter = 0;
+	sml->iptr = 0;
 	sml->running = true;
 	continue;
       }
 
-      if( key == KEY_BACKSPACE || key == KEY_DC ) {
+      if( key == KEY_BACKSPACE || key == KEY_DC || key == 127 ) {
 	if( buffptr > 0 ) {
 	  buffptr--;
 	  line[buffptr] = 0;
+	} else {
+	  beep();
 	}
 	continue;
       }
@@ -134,27 +135,29 @@ int run_loop() {
 	  buffptr--;
 	}
 	line[buffptr] = 0;
+      } else {
+	beep();
       }
     }
 
-    if(sml->counter == MEMSIZE) {
-      error_message("COUNTER OVERRAN MEMORY");
-      returnCode = 1;		// magic number again
+    if(sml->iptr == MEMSIZE) {
+      error_message("IPTR OVERRAN MEMORY");
+      value = 1;		// magic number again
       break;
     }
     if( sml->running ) {
       update = true;
-      sml->instructionRegister = sml->memory[sml->counter];
-      sml->operationCode = sml->instructionRegister / OPFACT;
-      sml->operand = sml->instructionRegister % OPFACT;
-      if(sml->operationCode < 0 || sml->operationCode >= OPFACT) {
+      sml->instr = sml->memory[sml->iptr];
+      sml->opcode = sml->instr / OPFACT;
+      sml->operand = sml->instr % OPFACT;
+      if(sml->opcode < 0 || sml->opcode >= OPFACT) {
 	opcode_invalid();
       } else {
-	returnCode=sml->inst_tble[sml->operationCode]();
+	value = sml->inst_tble[sml->opcode]();
       }
     }
   }
-  return returnCode;
+  return value;
 }
 
 int init_machine()
@@ -192,11 +195,12 @@ int init_machine()
   sml->inst_tble[INC]=opcode_inc;
   sml->inst_tble[DEC]=opcode_dec;
 
-  sml->accumulator = 0;
-  sml->counter = 0;
-  sml->instructionRegister = 0;
-  sml->operationCode = 0;
+  sml->acc = 0;
+  sml->iptr = 0;
+  sml->instr = 0;
+  sml->opcode = 0;
   sml->operand = 0;
+  sml->wptr = 0;
   sml->running = false;
   sml->ibc = 0;
   for(i = 0; i < MEMSIZE; ++i) {

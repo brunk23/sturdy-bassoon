@@ -8,16 +8,16 @@
 // load operation
 int opcode_load()
 {
-  sml->counter++;		// increment the instruction counter
-  sml->accumulator = sml->memory[sml->operand];
+  sml->iptr++;		// increment the instruction counter
+  sml->acc = sml->memory[sml->operand];
   return 0;
 }
 
 // store operation
 int opcode_store()
 {
-  sml->counter++;		// increment the instruction counter
-  sml->memory[sml->operand] = sml->accumulator;
+  sml->iptr++;		// increment the instruction counter
+  sml->memory[sml->operand] = sml->acc;
   return 0;
 }
 
@@ -41,7 +41,7 @@ int opcode_read()
   sml->ibc++;
   sml->ibc %= MEMSIZE;
 
-  sml->counter++;
+  sml->iptr++;
   sml->memory[sml->operand] = input;
   return 0;
 }
@@ -49,7 +49,7 @@ int opcode_read()
 int opcode_write()
 {
   output_value(sml->memory[sml->operand]);
-  sml->counter++;
+  sml->iptr++;
   return 0;
 }
 

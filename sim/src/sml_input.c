@@ -15,10 +15,10 @@ int buffptr = 0;
  *
  * This will also take commands that effect the machine
  * state.
- * "go" (which sets the counter to 0 and runs)
- * "continue" (which runs without changing counter)
- * "step" (sets counter to 0 and stops after each step)
- * "break ##" (sets a breakpoint when counter hits ##)
+ * "go" (which sets the iptr to 0 and runs)
+ * "continue" (which runs without changing iptr)
+ * "step" (sets iptr to 0 and stops after each step)
+ * "break ##" (sets a breakpoint when iptr hits ##)
  */
 void process() {
   char str[BUFFSIZE+1];
@@ -28,9 +28,35 @@ void process() {
 
   buffptr = 0;
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
-    value = 0;
-    negative = false;
 
+    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
+      if( BLANK == state ) {
+
+	continue;
+      }
+      if( NUMBER == state ) {
+
+	continue;
+      }
+      if( ALPHA == state ) {
+
+	continue;
+      }
+      if( ADDRESS == state ) {
+
+	continue;
+      }
+    }
+
+    if( isalpha( line[lineptr] ) ) {
+
+      continue;
+    }
+
+    if( isdigit( line[lineptr] ) ) {
+
+      continue;
+    }
     if( line[lineptr] == 0 || line[lineptr] == '#' ) {
       return;
     }
@@ -54,7 +80,7 @@ void process() {
       if( negative ) {
 	value *= -1;
       }
-      sml->memory[sml->counter++] = value;
+      sml->memory[sml->iptr++] = value;
     }
   }
 }
@@ -75,18 +101,23 @@ int token(char *str) {
  * These are the characters allowed into the linebuffer
  */
 bool allowedchar(int a) {
+
+  /* digits are allowed for numbers */
   if( isdigit(a) ) {
     return true;
   }
+
+  /* alphabet allowed for commands */
   if( isalpha(a) ) {
     return true;
   }
   switch( a ) {
-  case '-':
-  case '+':
-  case '@':
-  case ' ':
-  case '\t':
+  case '-':  /* Negative number */
+  case '+':  /* Positive number, not needed */
+  case '@':  /* Move read destination */
+  case '#':  /* Comments */
+  case ' ':  /* Spaces */
+  case '\t': /* Tabs */
     return true;
   default:
     break;

@@ -7,27 +7,27 @@
 // add operation
 int opcode_add()
 {
-  sml->counter++;
-  sml->accumulator += sml->memory[sml->operand];
-  sml->accumulator %= (MAXOP * OPFACT);
+  sml->iptr++;
+  sml->acc += sml->memory[sml->operand];
+  sml->acc %= (MAXOP * OPFACT);
   return 0;
 }
 
 // subtract operation
 int opcode_subtract()
 {
-  sml->counter++;
-  sml->accumulator -= sml->memory[sml->operand];
-  sml->accumulator %= (MAXOP*OPFACT);
+  sml->iptr++;
+  sml->acc -= sml->memory[sml->operand];
+  sml->acc %= (MAXOP*OPFACT);
   return 0;
 }
 
 // simple operation
 int opcode_multiply()
 {
-  sml->counter++;
-  sml->accumulator *= sml->memory[sml->operand];
-  sml->accumulator %= (MAXOP*OPFACT);
+  sml->iptr++;
+  sml->acc *= sml->memory[sml->operand];
+  sml->acc %= (MAXOP*OPFACT);
   return 0;
 }
 
@@ -39,8 +39,8 @@ int opcode_divide()
     sml->running = false;
     return -1;
   }
-  sml->counter++;
-  sml->accumulator /= sml->memory[sml->operand];
+  sml->iptr++;
+  sml->acc /= sml->memory[sml->operand];
   return 0;
 }
 
@@ -52,14 +52,14 @@ int opcode_mod()
     sml->running = false;
     return -1;
   }
-  sml->counter++;
-  sml->accumulator %= sml->memory[sml->operand];
+  sml->iptr++;
+  sml->acc %= sml->memory[sml->operand];
   return 0;
 }
 
 int opcode_inc()
 {
-  sml->counter++;
+  sml->iptr++;
   sml->memory[sml->operand]++;
   sml->memory[sml->operand] %= (MAXOP * OPFACT);
   return 0;
@@ -67,7 +67,7 @@ int opcode_inc()
 
 int opcode_dec()
 {
-  sml->counter++;
+  sml->iptr++;
   sml->memory[sml->operand]--;
   sml->memory[sml->operand] %= (MAXOP * OPFACT);
   return 0;

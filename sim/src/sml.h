@@ -43,11 +43,12 @@ enum PROCESS_STATES {
  * If it is negative it will always break there.
  */
 struct machineState {
-  int accumulator;
-  int counter;
-  int instructionRegister;
-  int operationCode;
+  int acc;
+  int iptr;
+  int instr;
+  int opcode;
   int operand;
+  int wptr;
   int inbuff[MEMSIZE];
   int ibc;
   int memory[MEMSIZE];
