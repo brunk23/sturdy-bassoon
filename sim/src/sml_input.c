@@ -21,39 +21,40 @@ int buffptr = 0;
  * "break ##" (sets a breakpoint when counter hits ##)
  */
 void process() {
-  int input;
-  unsigned int i;
+  char str[BUFFSIZE+1];
+  int value, state = BLANK;
+  unsigned int lineptr, strptr = 0;
   bool negative = false;
 
   buffptr = 0;
-  for( i = 0; i < BUFFSIZE; i++ ) {
-    input = 0;
+  for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
+    value = 0;
     negative = false;
 
-    if( line[i] == 0 || line[i] == '#' ) {
+    if( line[lineptr] == 0 || line[lineptr] == '#' ) {
       return;
     }
 
-    if( line[i] == ' ' || line[i] == '\t' ) {
+    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
       continue;
     }
 
-    if( line[i] == '-' ) {
+    if( line[lineptr] == '-' ) {
       negative = true;
-      i++;
+      lineptr++;
     }
 
-    while( isdigit(line[i]) ) {
-      input *= 10;
-      input += line[i] - '0';
-      i++;
+    while( isdigit(line[lineptr]) ) {
+      value *= 10;
+      value += line[lineptr] - '0';
+      lineptr++;
     }
 
-    if( !out_of_bounds(input, 0, MAXVAL) ) {
+    if( !out_of_bounds(value, 0, MAXVAL) ) {
       if( negative ) {
-	input *= -1;
+	value *= -1;
       }
-      sml->memory[sml->counter++] = input;
+      sml->memory[sml->counter++] = value;
     }
   }
 }

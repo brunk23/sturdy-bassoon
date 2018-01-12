@@ -18,6 +18,8 @@ void output_value(int value) {
   struct out_buffer *tmp;
 
   if( out_buffer_max_length == 0 ) {
+    endwin();
+    fprintf(stderr, "FATAL ERROR: There's no lines for output.\n");
     exit(1);
   }
 
@@ -29,6 +31,8 @@ void output_value(int value) {
   }
 
   if( 0 == (tmp = (struct out_buffer *)malloc(sizeof(struct out_buffer)))) {
+    endwin();
+    fprintf(stderr, "FATAL ERROR: Unable to get memory for output.\n");
     exit(1);
   }
 

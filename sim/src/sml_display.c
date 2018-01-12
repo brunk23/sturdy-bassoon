@@ -57,14 +57,14 @@ int init_windows() {
 }
 
 void updatescreen() {
-  int height, width;
+  int width;
 
   werase(chipwindow);
   werase(outputwindow);
   werase(memwindow);
   werase(inputwindow);
 
-  getmaxyx(stdscr, height, width);
+  width = getmaxx(stdscr);
 
   displaymem();
   displaychip();
