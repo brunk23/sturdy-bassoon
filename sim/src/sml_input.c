@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "sml.h"
 
@@ -29,21 +30,23 @@ void process() {
   buffptr = 0;
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
 
-    if( line[lineptr] == ' ' || line[lineptr] == '\t' )
+    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
       if( BLANK == state ) {
-
 	continue;
       }
       if( NUMBER == state ) {
 
+	state = BLANK;
 	continue;
       }
       if( ALPHA == state ) {
+	str[strptr] = 0;
 
 	continue;
       }
       if( ADDRESS == state ) {
 
+	state = BLANK;
 	continue;
       }
       continue;
@@ -51,21 +54,33 @@ void process() {
 
     if( isalpha( line[lineptr] ) ) {
       if( BLANK == state ) {
-
-	continue;
-      }
-      if( NUMBER == state ) {
-
+	strptr = 0;
+	str[strptr] = line[lineptr];
+	strptr++;
+	state = ALPHA;
 	continue;
       }
       if( ALPHA == state ) {
+	str[strptr] = line[lineptr];
+	strptr++;
 
+	if(strptr > BUFFSIZE) {
+	  /*
+	   * This should not be possible.
+	   */
+	  endwin();
+	  fprintf(stderr, "FATAL: Buffer overrun processing string.\n");
+	  exit(1);
+	}
 	continue;
+      }
+      if( NUMBER == state ) {
+	error_message("letters inside numbers!");
       }
       if( ADDRESS == state ) {
-
-	continue;
+	error_message("can't go to storybook land.");
       }
+      state = BLANK;
       continue;
     }
 
@@ -74,6 +89,7 @@ void process() {
 	negative = false;
 	state = NUMBER;
 	value = line[lineptr] - '0';
+	state = NUMBER;
 	continue;
       }
       if( NUMBER == state ) {
@@ -81,15 +97,15 @@ void process() {
 	value += line[lineptr] - '0';
 	continue;
       }
-      if( ALPHA == state ) {
-	error_message("numbers don't belong in words");
-	continue;
-      }
       if( ADDRESS == state ) {
 	value *= 10;
 	value += line[lineptr] - '0';
 	continue;
       }
+      if( ALPHA == state ) {
+	error_message("numbers don't belong in words");
+      }
+      state = BLANK;
       continue;
     }
 
@@ -112,23 +128,22 @@ void process() {
 
     if( line[lineptr] == '@' ) {
       if( BLANK == state ) {
-	state = ADDRESS;
 	negative = false;
 	value = 0;
+	state = ADDRESS;
 	continue;
       }
       if( NUMBER == state ) {
 	error_message("'@' inside a number");
-	continue;
       }
       if( ALPHA == state ) {
 	error_message("'@' inside a word");
-	continue;
       }
       if( ADDRESS == state ) {
 	error_message("'@' inside an address");
-	continue;
       }
+      state = BLANK;
+    }
 
     if( line[lineptr] == '-' || line[lineptr] == '+' ) {
       if( BLANK == state ) {
@@ -143,16 +158,14 @@ void process() {
       }
       if( NUMBER == state ) {
 	error_message("'-' or '+' sign inside a number.");
-	continue;
       }
       if( ALPHA == state ) {
 	error_message("words much be alphabetical.");
-	continue;
       }
       if( ADDRESS == state ) {
 	error_message("memory addresses don't need signs.");
-	continue;
       }
+      state = BLANK;
       continue;
     }
 
