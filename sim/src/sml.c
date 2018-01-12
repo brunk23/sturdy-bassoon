@@ -41,11 +41,6 @@ int main(int argc, char *argv[])
   signal(SIGINT, sig_int);
   atexit(cleanup);
 
-  displaychip();
-  displaymem();
-
-  error_message("FCC successfully booted . . .");
-
   if ( argc > 1 ) {
     debug = true;
   } else {
