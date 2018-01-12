@@ -135,3 +135,10 @@ void displaychip() {
     mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
   }
 }
+
+void error_message(char *message)
+{
+  werase(messagewindow);
+  mvwprintw(messagewindow, 2, 2, message);
+  wnoutrefresh(messagewindow);
+}

@@ -7,62 +7,6 @@ struct out_buffer *out_buffer_head;
 struct out_buffer *out_buffer_tail;
 int out_buffer_max_length;
 
-char line[BUFFSIZE + 1];
-int buffptr = 0;
-
-/*
- * This will process commands and all input. Numbers
- * will be added directly to memory where readptr is
- * pointing.
- *
- * This will eventually compile very simple
- * assembly. Ex. read ## -> 10##
- *
- * This will also take commands that effect the machine
- * state.
- * "go" (which sets the counter to 0 and runs)
- * "continue" (which runs without changing counter)
- * "step" (sets counter to 0 and stops after each step)
- * "break ##" (sets a breakpoint when counter hits ##) 
- */
-void process() {
-  int input;
-  unsigned int i;
-  bool negative = false;
-
-  buffptr = 0;
-  for( i = 0; i < BUFFSIZE; i++ ) {
-    input = 0;
-    negative = false;
-
-    if( line[i] == 0 || line[i] == '#' ) {
-      return;
-    }
-
-    if( line[i] == ' ' || line[i] == '\t' ) {
-      continue;
-    }
-
-    if( line[i] == '-' ) {
-      negative = true;
-      i++;
-    }
-
-    while( isdigit(line[i]) ) {
-      input *= 10;
-      input += line[i] - '0';
-      i++;
-    }
-
-    if( !out_of_bounds(input, 0, MAXVAL) ) {
-      if( negative ) {
-	input *= -1;
-      }
-      sml->memory[sml->counter++] = input;
-    }
-  }
-}
-
 /*
  * As items come in, they are added to the tail.
  * If if list is larger than the max length, throw out
@@ -133,14 +77,29 @@ int out_buff_len() {
   return curr_length;
 }
 
-/*
- * This will look for commands to assemble or
- * execute and will return a token (either a
- * command that can be assembled or a command
- * that will control the simulator).
- */
-int token(char *str) {
-  int val = INVALID;
-
-  return val;
+int memory_dump()
+{
+  int i, j;
+  printf("REGISTERS\n");
+  printf("Accumulator:\t\t%04i\n", sml->accumulator);
+  printf("instructionPointer:\t%02i\n", sml->counter);
+  printf("instructionRegister:\t%04i\n", sml->instructionRegister);
+  printf("operationCode:\t\t%02i\n", sml->operationCode);
+  printf("operand:\t\t%02i\n\nMEMORY:", sml->operand);
+  for(i = 0; i < 10; ++ i) {
+    printf("  %02i   ", i);
+  }
+  printf("\n");
+  for(i = 0; i < MEMSIZE/10 ; ++i) {
+    printf("   %02i  ", i*10);
+    for(j = 0; j < 10; ++j) {
+      if(sml->memory[i*10+j] < 0 ) {
+	printf("-%04i  ",-sml->memory[i*10+j]);
+      } else {
+	printf(" %04i  ",sml->memory[i*10+j]);;
+      }
+    }
+    printf("\n");
+  }
+  return 0;
 }
