@@ -6,7 +6,8 @@
 #include "sml_math.h"
 #include "sml_control.h"
 #include "sml_memory.h"
-#include "sml_io.h"
+#include "sml_display.h"
+#include "sml_output.h"
 
 struct machineState *sml;
 

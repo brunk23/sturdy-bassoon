@@ -4,7 +4,8 @@
 
 #include "sml.h"
 #include "sml_memory.h"
-#include "sml_io.h"
+#include "sml_display.h"
+#include "sml_output.h"
 
 /*
  * Add all input and string processing stuff here.  Handle all
