@@ -29,7 +29,7 @@ void process() {
   buffptr = 0;
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
 
-    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
+    if( line[lineptr] == ' ' || line[lineptr] == '\t' )
       if( BLANK == state ) {
 
 	continue;
@@ -46,34 +46,114 @@ void process() {
 
 	continue;
       }
+      continue;
     }
 
     if( isalpha( line[lineptr] ) ) {
+      if( BLANK == state ) {
 
+	continue;
+      }
+      if( NUMBER == state ) {
+
+	continue;
+      }
+      if( ALPHA == state ) {
+
+	continue;
+      }
+      if( ADDRESS == state ) {
+
+	continue;
+      }
       continue;
     }
 
     if( isdigit( line[lineptr] ) ) {
-
+      if( BLANK == state ) {
+	negative = false;
+	state = NUMBER;
+	value = line[lineptr] - '0';
+	continue;
+      }
+      if( NUMBER == state ) {
+	value *= 10;
+	value += line[lineptr] - '0';
+	continue;
+      }
+      if( ALPHA == state ) {
+	error_message("numbers don't belong in words");
+	continue;
+      }
+      if( ADDRESS == state ) {
+	value *= 10;
+	value += line[lineptr] - '0';
+	continue;
+      }
       continue;
     }
+
+    /* Process last state and then leave */
     if( line[lineptr] == 0 || line[lineptr] == '#' ) {
+      if( NUMBER == state ) {
+
+	return;
+      }
+      if( ALPHA == state ) {
+
+	return;
+      }
+      if( ADDRESS == state ) {
+
+	return;
+      }
       return;
     }
 
-    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
+    if( line[lineptr] == '@' ) {
+      if( BLANK == state ) {
+	state = ADDRESS;
+	negative = false;
+	value = 0;
+	continue;
+      }
+      if( NUMBER == state ) {
+	error_message("'@' inside a number");
+	continue;
+      }
+      if( ALPHA == state ) {
+	error_message("'@' inside a word");
+	continue;
+      }
+      if( ADDRESS == state ) {
+	error_message("'@' inside an address");
+	continue;
+      }
+
+    if( line[lineptr] == '-' || line[lineptr] == '+' ) {
+      if( BLANK == state ) {
+	if( line[lineptr] == '-' ) {
+	  negative = true;
+	} else {
+	  negative = false;
+	}
+	value = 0;
+	state = NUMBER;
+	continue;
+      }
+      if( NUMBER == state ) {
+	error_message("'-' or '+' sign inside a number.");
+	continue;
+      }
+      if( ALPHA == state ) {
+	error_message("words much be alphabetical.");
+	continue;
+      }
+      if( ADDRESS == state ) {
+	error_message("memory addresses don't need signs.");
+	continue;
+      }
       continue;
-    }
-
-    if( line[lineptr] == '-' ) {
-      negative = true;
-      lineptr++;
-    }
-
-    while( isdigit(line[lineptr]) ) {
-      value *= 10;
-      value += line[lineptr] - '0';
-      lineptr++;
     }
 
     if( !out_of_bounds(value, 0, MAXVAL) ) {
