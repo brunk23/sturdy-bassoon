@@ -70,3 +70,26 @@ int token(char *str) {
 
   return val;
 }
+
+/*
+ * These are the characters allowed into the linebuffer
+ */
+bool allowedchar(int a) {
+  if( isdigit(a) ) {
+    return true;
+  }
+  if( isalpha(a) ) {
+    return true;
+  }
+  switch( a ) {
+  case '-':
+  case '+':
+  case '@':
+  case ' ':
+  case '\t':
+    return true;
+  default:
+    break;
+  }
+  return false;
+}

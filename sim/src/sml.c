@@ -127,12 +127,14 @@ int run_loop() {
 	continue;
       }
 
-      line[buffptr] = key;
-      buffptr++;
-      if(buffptr == BUFFSIZE-1) {
-	buffptr--;
+      if( allowedchar(key) ) {
+	line[buffptr] = key;
+	buffptr++;
+	if(buffptr == BUFFSIZE-1) {
+	  buffptr--;
+	}
+	line[buffptr] = 0;
       }
-      line[buffptr] = 0;
     }
 
     if(sml->counter == MEMSIZE) {

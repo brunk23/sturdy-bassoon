@@ -109,6 +109,7 @@ void process();
 void output_value(int);
 void resize_out_buffer(int);
 int out_buff_len();
+bool allowedchar(int);
 int token(char *);
 
 #endif
