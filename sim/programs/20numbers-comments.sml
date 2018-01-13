@@ -1,4 +1,4 @@
-# HAS BUG >> INFINITE LOOP ON IDENTICAL NUMBERS, SEE 30numbers.chip
+# HAS BUG >> INFINITE LOOP ON IDENTICAL NUMBERS, SEE 30numbers.sml
 # for fix (which reverses the sort but doesn't halt).
 # This will read in 20 numbers, sort them, and print them in descending
 # order. It would be easy to change this to print them in ascending order
@@ -68,5 +68,3 @@
 4053    # jump to the print
 4300
 1179
-g
-7734

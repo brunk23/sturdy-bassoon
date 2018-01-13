@@ -10,4 +10,4 @@ sto 99		#08 store the sum
 jump 3		#09 back to start
 write 99	#10 print sum
 halt		#11 end program
-1
+0001
