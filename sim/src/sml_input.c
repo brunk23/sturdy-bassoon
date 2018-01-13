@@ -150,7 +150,7 @@ void process() {
       if( endcond(line[lineptr]) ) {
 	break;
       }
-      if( isdigit( line[lineptr]) || isalpha( line[lineptr] ) ) {
+      if( allowedchar( line[lineptr] ) ) {
 	strptr = 0;
 	str[strptr] = line[lineptr];
 	strptr++;
@@ -433,6 +433,7 @@ bool allowedchar(int a) {
   case '#':  /* Comments */
   case ' ':  /* Spaces */
   case '\t': /* Tabs */
+  case '/':  /* slash for filenames */
   case '.':  /* dots in filenames */
     return true;
   default:
