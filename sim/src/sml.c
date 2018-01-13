@@ -6,8 +6,6 @@
 
 struct machineState *sml;
 
-bool debug = false;
-
 int main(int argc, char *argv[])
 {
   int value = 0, i;
@@ -41,12 +39,6 @@ int main(int argc, char *argv[])
   signal(SIGINT, sig_int);
   atexit(cleanup);
 
-  if ( argc > 1 ) {
-    debug = true;
-  } else {
-    debug = false;
-  }
-
   run_loop();
 
   return value;
@@ -67,7 +59,7 @@ void cleanup() {
   }
 
   if(sml) {
-    if( debug ) {
+    if( sml->debug ) {
       // we only dump the memory if we input the file by hand
       // or we request it
       memory_dump();
@@ -203,6 +195,7 @@ int init_machine()
   sml->wptr = 0;
   sml->running = false;
   sml->stepping = false;
+  sml->debug = false;
   sml->inbuff_start = 0;
   sml->inbuff_end = 0;
   for(i = 0; i < MEMSIZE; ++i) {

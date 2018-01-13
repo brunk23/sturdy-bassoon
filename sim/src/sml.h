@@ -32,7 +32,9 @@ enum OPCODES {
 
 enum PROCESS_STATES {
   BLANK, NUMBER, ALPHA, ADDRESS, ASSEMBLE, ASSEMBLEHELP,
-  STEP=MAXOP+1, GO, STOP, BREAK, CONTINUE, CLEAR
+  FILEIO, FILEIOHELP,
+  STEP=MAXOP+1, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
+  DUMPMEM, DUMPSTATE, RESTOREMEM
 };
 
 /*
@@ -57,6 +59,7 @@ struct machineState {
   opPtr inst_tble[MAXOP];
   bool running;
   bool stepping;
+  bool debug;
 };
 
 struct out_buffer {
@@ -116,5 +119,8 @@ bool allowedchar(int);
 int token(char *);
 bool endcond(char);
 bool endstr(char);
+int readfile(char *);
+int writefile(char *);
+int writestate(char *);
 
 #endif

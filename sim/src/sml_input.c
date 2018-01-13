@@ -106,13 +106,24 @@ void process() {
         str[strptr] = 0;
 	opcode = token(str);
 	if( opcode >= 0 ) {
-	  state = ASSEMBLEHELP;
+	  negative = false;
 	  value = 0;
-	  if( opcode == HALT ) {
+	  strptr = 0;
+	  switch( opcode ) {
+	  case HALT:
 	    sml->memory[sml->iptr] = opcode * OPFACT;
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	    state = BLANK;
+	    break;
+	  case DUMPMEM:
+	  case DUMPSTATE:
+	  case RESTOREMEM:
+	    state = FILEIOHELP;
+	    break;
+	  default:
+	    state = ASSEMBLEHELP;
+	    break;
 	  }
 	} else {
 	  state = BLANK;
@@ -131,6 +142,65 @@ void process() {
       state = BLANK;
       break;
 
+      /* FILEIOHELP state */
+    case FILEIOHELP:
+      if( endstr(line[lineptr]) ) {
+	return;
+      }
+      if( endcond(line[lineptr]) ) {
+	break;
+      }
+      if( isdigit( line[lineptr]) || isalpha( line[lineptr] ) ) {
+	strptr = 0;
+	str[strptr] = line[lineptr];
+	strptr++;
+	state = FILEIO;
+	break;
+      }
+      state = BLANK;
+      error_message("could not find address");
+      break;
+
+      /* FILEIO state */
+    case FILEIO:
+      if( endcond( line[lineptr] ) ) {
+        str[strptr] = 0;
+	state = BLANK;
+	switch( opcode ) {
+	case DUMPMEM:
+	  if( !(writefile(str) == 0) ) {
+	    error_message("unable to save memory to file");
+	  }
+	  break;
+	case DUMPSTATE:
+	  if( !(writestate(str) == 0) ) {
+	    error_message("unable to save state to file");
+	  }
+	  break;
+	case RESTOREMEM:
+	  if( !(readfile(str) == 0 ) ) {
+	    error_message("unable to read file to memory");
+	  }
+	  break;
+	default:
+	  error_message("bad state in file io");
+	  break;
+	}
+	if( endstr( line[lineptr] ) ) {
+	  return;
+	}
+	break;
+      }
+      if( allowedchar( line[lineptr] ) ) {
+        str[strptr] = line[lineptr];
+        strptr++;
+        break;
+      }
+      error_message("bad file name: command ignored");
+      state = BLANK;
+      break;
+
+      /* ASSEMBLEHELP state */
     case ASSEMBLEHELP:
       if( endstr(line[lineptr]) ) {
 	return;
@@ -140,6 +210,14 @@ void process() {
       }
       if( isdigit( line[lineptr]) ) {
 	value = line[lineptr] - '0';
+	state = ASSEMBLE;
+	break;
+      }
+      if( line[lineptr] == '-' || line[lineptr] == '+' ) {
+	if( line[lineptr] == '-' ) {
+	  negative = true;
+	}
+	value = 0;
 	state = ASSEMBLE;
 	break;
       }
@@ -174,6 +252,17 @@ void process() {
     case ASSEMBLE:
       if( endcond( line[lineptr] ) ) {
 	state = BLANK;
+	if( negative ) {
+	  value *= -1;
+	}
+	if( opcode == SET ) {
+	  if( !out_of_bounds(value, MINVAL, MAXVAL) ) {
+	    sml->acc = value;
+	  } else {
+	    error_message("unable to set accumulator");
+	  }
+	  break;
+	}
 	if( !out_of_bounds(value, 0, MEMSIZE) ) {
 	  if( opcode == BREAK ) {
 	    sml->breaktable[value] = 1;
@@ -295,6 +384,26 @@ int token(char *str) {
     sml->running = false;
     return val;
   }
+  if( strcmp(str, "nodump") == 0 ) {
+    sml->debug  = false;
+    return val;
+  }
+  if( strcmp(str, "dumpmem") == 0 ) {
+    return DUMPMEM;
+  }
+  if( strcmp(str, "restoremem") == 0 ) {
+    return RESTOREMEM;
+  }
+  if( strcmp( str, "dumpstate") == 0 ) {
+    return DUMPSTATE;
+  }
+  if( strcmp(str, "set") == 0 ) {
+    return SET;
+  }
+  if( strcmp(str, "reset") == 0 ) {
+    init_machine();
+    return val;
+  }
   if( strcmp(str, "wipe") == 0 ) {
     error_message("");
     return val;
@@ -324,6 +433,7 @@ bool allowedchar(int a) {
   case '#':  /* Comments */
   case ' ':  /* Spaces */
   case '\t': /* Tabs */
+  case '.':  /* dots in filenames */
     return true;
   default:
     break;
