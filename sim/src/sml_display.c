@@ -41,16 +41,17 @@ int init_windows() {
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();
+    fprintf(stderr,"FATAL: Screen is not big enough for this sim.\n");
     exit(1);
   }
 
   /*
    * Define sizes of windows
    */
-  chipwindow = newwin(3, width-10, 0, 0);
-  messagewindow = newwin(5, width-10, 3, 0);
-  memwindow = newwin(13, width-10, 8, 0);
-  inputwindow = newwin(3, width-10, 21, 0);
+  chipwindow = newwin(4, width-10, 0, 0);
+  messagewindow = newwin(5, width-10, 4, 0);
+  memwindow = newwin(13, width-10, 9, 0);
+  inputwindow = newwin(3, width-10, 22, 0);
   outputwindow = newwin(height, 10, 0, width - 10);
 
   return 0;
@@ -127,6 +128,7 @@ void displaymem() {
 }
 
 void displaychip() {
+  char *n = "DATA";
   mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->iptr);
   if(sml->acc >= 0 ) {
     mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->acc);
@@ -141,6 +143,61 @@ void displaychip() {
     } else {
       mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
     }
+  }
+  switch( sml->memory[ sml->iptr ] / OPFACT ) {
+  case READ:
+    n = "read";
+    break;
+  case WRITE:
+    n = "write";
+    break;
+  case LOAD:
+    n = "lda";
+    break;
+  case STORE:
+    n = "sto";
+    break;
+  case ADD:
+    n = "add";
+    break;
+  case SUBTRACT:
+    n = "sub";
+    break;
+  case DIVIDE:
+    n = "div";
+    break;
+  case MULTIPLY:
+    n = "mult";
+    break;
+  case MOD:
+    n = "mod";
+    break;
+  case INC:
+    n = "inc";
+    break;
+  case DEC:
+    n = "dec";
+    break;
+  case BRANCH:
+    n = "jump";
+    break;
+  case BRANCHNEG:
+    n = "jneg";
+    break;
+  case BRANCHZERO:
+    n = "jzero";
+    break;
+  case HALT:
+    n = "halt";
+    break;
+  default:
+    mvwprintw(chipwindow,2,1, "Instruction: %s %04i",n,sml->memory[sml->iptr]);
+    n = 0;
+    break;
+  }
+  if( n != 0 ) {
+    mvwprintw(chipwindow, 2, 1, "Instruction: %s %02i",
+	      n, sml->memory[sml->iptr] % OPFACT);
   }
 }
 

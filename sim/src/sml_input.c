@@ -361,21 +361,21 @@ int token(char *str) {
   if( strcmp(str, "halt") == 0 ) {
     return HALT;
   }
-  if( strcmp(str, "quit") == 0 ) {
+  if( strcmp(str, "quit") == 0 || strcmp(str, "q") == 0 ) {
     exit(0);
   }
-  if( strcmp(str, "step") == 0 ) {
+  if( strcmp(str, "step") == 0 || strcmp(str, "s") == 0 ) {
     sml->stepping = true;
     sml->running = true;
     return val;
   }
-  if( strcmp(str, "go") == 0 ) {
+  if( strcmp(str, "go") == 0 || strcmp(str, "g") == 0 ) {
     sml->iptr = 0;
     sml->stepping = false;
     sml->running = true;
     return val;
   }
-  if( strcmp(str, "continue") == 0 ) {
+  if( strcmp(str, "continue") == 0 || strcmp(str, "cont") == 0) {
     sml->stepping = false;
     sml->running = true;
     return val;
