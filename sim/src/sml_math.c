@@ -35,7 +35,7 @@ int opcode_multiply()
 int opcode_divide()
 {
   if ( sml->memory[sml->operand] == 0 ) {
-    error_message("DIVIDE BY ZERO: MACHINE HALTED");
+    error_message("DIVIDE BY ZERO:","MACHINE HALTED",0);
     sml->running = false;
     return -1;
   }
@@ -48,7 +48,7 @@ int opcode_divide()
 int opcode_mod()
 {
   if ( sml->memory[sml->operand] == 0 ) {
-    error_message("DIVIDE BY ZERO: MACHINE HALTED");
+    error_message("DIVIDE BY ZERO:","MACHINE HALTED",0);
     sml->running = false;
     return -1;
   }

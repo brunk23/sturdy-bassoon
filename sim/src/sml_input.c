@@ -28,6 +28,7 @@ void process() {
   unsigned int lineptr, strptr = 0;
   bool negative = false;
 
+  error_message(0,0,0);
   buffptr = 0;
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
 
@@ -83,7 +84,7 @@ void process() {
 	    sml->inbuff_end %= MEMSIZE;
 	  }
 	} else {
-	  error_message("number out of range: ignoring");
+	  error_message("number out of range:","ignoring",line);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -96,7 +97,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in number format: ignoring value");
+      error_message("errors in number format:","ignoring value",line);
       state = BLANK;
       break;
 
@@ -138,7 +139,7 @@ void process() {
         strptr++;
         break;
       }
-      error_message("garbage in alpha-string: ignoring word");
+      error_message("garbage in alpha-string:","ignoring word",line);
       state = BLANK;
       break;
 
@@ -158,7 +159,7 @@ void process() {
 	break;
       }
       state = BLANK;
-      error_message("could not find address");
+      error_message(0,"could not find address",line);
       break;
 
       /* FILEIO state */
@@ -169,21 +170,21 @@ void process() {
 	switch( opcode ) {
 	case DUMPMEM:
 	  if( !(writefile(str) == 0) ) {
-	    error_message("unable to save memory to file");
+	    error_message(0,"unable to save memory to file",line);
 	  }
 	  break;
 	case DUMPSTATE:
 	  if( !(writestate(str) == 0) ) {
-	    error_message("unable to save state to file");
+	    error_message(0,"unable to save state to file",line);
 	  }
 	  break;
 	case RESTOREMEM:
 	  if( !(readfile(str) == 0 ) ) {
-	    error_message("unable to read file to memory");
+	    error_message(0,"unable to read file to memory",line);
 	  }
 	  break;
 	default:
-	  error_message("bad state in file io");
+	  error_message(0,"bad state in file io",line);
 	  break;
 	}
 	if( endstr( line[lineptr] ) ) {
@@ -196,7 +197,7 @@ void process() {
         strptr++;
         break;
       }
-      error_message("bad file name: command ignored");
+      error_message("bad file name:","command ignored",line);
       state = BLANK;
       break;
 
@@ -222,7 +223,7 @@ void process() {
 	break;
       }
       state = BLANK;
-      error_message("could not find address");
+      error_message(0,"could not find address",line);
       break;
 
       /* ADDRESS state */
@@ -231,7 +232,7 @@ void process() {
 	if( !out_of_bounds(value, 0, MEMSIZE) ) {
 	  sml->iptr = value;
 	} else {
-	  error_message("Invalid address in @ command: staying put");
+	  error_message("Invalid address in @ command:","staying put",line);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -244,7 +245,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in @ command string: ignoring command");
+      error_message("errors in @ command string:","ignoring command",line);
       state = BLANK;
       break;
 
@@ -259,7 +260,7 @@ void process() {
 	  if( !out_of_bounds(value, MINVAL, MAXVAL) ) {
 	    sml->acc = value;
 	  } else {
-	    error_message("unable to set accumulator");
+	    error_message(0,"unable to set accumulator",line);
 	  }
 	  break;
 	}
@@ -277,7 +278,7 @@ void process() {
 	  sml->memory[sml->iptr] = opcode;
 	  sml->iptr++;
 	} else {
-	  error_message("Invalid address in assembly command: what?");
+	  error_message("Invalid address in assembly command:","what?",line);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -289,7 +290,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in assembly command: ignoring command");
+      error_message("errors in assembly command:","ignoring command",line);
       state = BLANK;
       break;
 
@@ -405,10 +406,10 @@ int token(char *str) {
     return val;
   }
   if( strcmp(str, "wipe") == 0 ) {
-    error_message("");
+    error_message(0,0,0);
     return val;
   }
-  error_message(str);
+  error_message(0,"Unrecognized string:",str);
   return val;
 }
 

@@ -82,9 +82,9 @@ extern WINDOW *outputwindow;
 // Function Defintions
 int init_machine();
 int memory_dump();
-void error_message(char *message);
+void error_message(char *, char *, char *);
 bool out_of_bounds(int, int, int);
-bool is_valid_address(int address);
+bool is_valid_address(int);
 int run_loop();
 void cleanup();
 int init_windows();

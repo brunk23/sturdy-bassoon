@@ -41,14 +41,14 @@ int opcode_nop()
 int opcode_halt()
 {
   sml->running = false;
-  error_message( "NORMAL HALT" );
+  error_message(0, "NORMAL HALT", 0);
   return sml->memory[sml->operand];
 }
 
 // Handle trying to run an unsupported operation
 int opcode_invalid()
 {
-  error_message("INVALID OPERATION CODE: MACHINE HALTED");
+  error_message("INVALID OPERATION CODE:","MACHINE HALTED",0);
   sml->running = false;
   return -1;
 }

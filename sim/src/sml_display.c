@@ -144,9 +144,16 @@ void displaychip() {
   }
 }
 
-void error_message(char *message)
-{
+void error_message(char *line1, char *line2, char *line3) {
   werase(messagewindow);
-  mvwprintw(messagewindow, 2, 2, message);
+  if( line1 ) {
+    mvwprintw(messagewindow, 1, 2, line1);
+  }
+  if( line2 ) {
+    mvwprintw(messagewindow, 2, 2, line2);
+  }
+  if( line3 ) {
+    mvwprintw(messagewindow, 3, 2, line3);
+  }
   wnoutrefresh(messagewindow);
 }

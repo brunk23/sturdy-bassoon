@@ -130,7 +130,7 @@ int run_loop() {
     }
 
     if(sml->iptr == MEMSIZE) {
-      error_message("IPTR OVERRAN MEMORY");
+      error_message(0,"IPTR OVERRAN MEMORY",0);
       value = 1;		// magic number again
       break;
     }
