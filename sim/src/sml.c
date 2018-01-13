@@ -107,9 +107,6 @@ int run_loop() {
 	}
 	continue;
       }
-      if( key == 'q' ) {
-	break;
-      }
 
       // CTRL-G == 7 and runs the machine
       if(key == 7 ) {
@@ -154,6 +151,9 @@ int run_loop() {
 	opcode_invalid();
       } else {
 	value = sml->inst_tble[sml->opcode]();
+      }
+      if( sml->stepping || sml->breaktable[sml->iptr] == 1 ) {
+	sml->running = false;
       }
     }
   }
@@ -202,7 +202,9 @@ int init_machine()
   sml->operand = 0;
   sml->wptr = 0;
   sml->running = false;
-  sml->ibc = 0;
+  sml->stepping = false;
+  sml->inbuff_start = 0;
+  sml->inbuff_end = 0;
   for(i = 0; i < MEMSIZE; ++i) {
     sml->inbuff[i] = 0;
     sml->breaktable[i] = 0;

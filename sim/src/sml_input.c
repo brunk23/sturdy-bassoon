@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "sml.h"
 
@@ -23,158 +24,191 @@ int buffptr = 0;
  */
 void process() {
   char str[BUFFSIZE+1];
-  int value, state = BLANK;
+  int value = 0, opcode = 0, state = BLANK;
   unsigned int lineptr, strptr = 0;
   bool negative = false;
 
   buffptr = 0;
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
 
-    if( line[lineptr] == ' ' || line[lineptr] == '\t' ) {
-      if( BLANK == state ) {
-	continue;
+    switch( state ) {
+      /* BLANK state */
+    case BLANK:
+      if( endstr( line[lineptr] ) ) {
+	return;
       }
-      if( NUMBER == state ) {
-
-	state = BLANK;
-	continue;
-      }
-      if( ALPHA == state ) {
-	str[strptr] = 0;
-
-	continue;
-      }
-      if( ADDRESS == state ) {
-
-	state = BLANK;
-	continue;
-      }
-      continue;
-    }
-
-    if( isalpha( line[lineptr] ) ) {
-      if( BLANK == state ) {
+      if( isalpha( line[lineptr] ) ) {
 	strptr = 0;
-	str[strptr] = line[lineptr];
+	str[strptr] = tolower(line[lineptr]);
 	strptr++;
 	state = ALPHA;
-	continue;
+	break;
       }
-      if( ALPHA == state ) {
-	str[strptr] = line[lineptr];
-	strptr++;
-
-	if(strptr > BUFFSIZE) {
-	  /*
-	   * This should not be possible.
-	   */
-	  endwin();
-	  fprintf(stderr, "FATAL: Buffer overrun processing string.\n");
-	  exit(1);
-	}
-	continue;
-      }
-      if( NUMBER == state ) {
-	error_message("letters inside numbers!");
-      }
-      if( ADDRESS == state ) {
-	error_message("can't go to storybook land.");
-      }
-      state = BLANK;
-      continue;
-    }
-
-    if( isdigit( line[lineptr] ) ) {
-      if( BLANK == state ) {
+      if(isdigit(line[lineptr])|| line[lineptr] == '-' || line[lineptr] == '+') {
 	negative = false;
+	if( line[lineptr] == '-' ) {
+	  negative = true;
+	}
+	if( isdigit( line[lineptr] ) ) {
+	  value = line[lineptr] - '0';
+	} else {
+	  value = 0;
+	}
 	state = NUMBER;
-	value = line[lineptr] - '0';
-	state = NUMBER;
-	continue;
+	break;
       }
-      if( NUMBER == state ) {
-	value *= 10;
-	value += line[lineptr] - '0';
-	continue;
-      }
-      if( ADDRESS == state ) {
-	value *= 10;
-	value += line[lineptr] - '0';
-	continue;
-      }
-      if( ALPHA == state ) {
-	error_message("numbers don't belong in words");
-      }
-      state = BLANK;
-      continue;
-    }
-
-    /* Process last state and then leave */
-    if( line[lineptr] == 0 || line[lineptr] == '#' ) {
-      if( NUMBER == state ) {
-
-	return;
-      }
-      if( ALPHA == state ) {
-
-	return;
-      }
-      if( ADDRESS == state ) {
-
-	return;
-      }
-      return;
-    }
-
-    if( line[lineptr] == '@' ) {
-      if( BLANK == state ) {
+      if( line[lineptr] == '@' ) {
 	negative = false;
 	value = 0;
 	state = ADDRESS;
-	continue;
+	break;
       }
-      if( NUMBER == state ) {
-	error_message("'@' inside a number");
-      }
-      if( ALPHA == state ) {
-	error_message("'@' inside a word");
-      }
-      if( ADDRESS == state ) {
-	error_message("'@' inside an address");
-      }
-      state = BLANK;
-    }
+      break;
 
-    if( line[lineptr] == '-' || line[lineptr] == '+' ) {
-      if( BLANK == state ) {
-	if( line[lineptr] == '-' ) {
-	  negative = true;
+      /* NUMBER state */
+    case NUMBER:
+      if( endcond( line[lineptr] ) ) {
+	state = BLANK;
+	if( !out_of_bounds(value, 0, MAXVAL) ) {
+	  if( negative ) {
+	    value *= -1;
+	  }
+	  if( sml->running == false && sml->stepping == false ) {
+	    sml->memory[sml->iptr] = value;
+	    sml->iptr++;
+	    sml->iptr %= MEMSIZE;
+	  } else {
+	    sml->inbuff[sml->inbuff_end] = value;
+	    sml->inbuff_end++;
+	    sml->inbuff_end %= MEMSIZE;
+	  }
 	} else {
-	  negative = false;
+	  error_message("number out of range: ignoring");
 	}
-	value = 0;
-	state = NUMBER;
-	continue;
+	if( endstr( line[lineptr] ) ) {
+	  return;
+	}
+	break;
       }
-      if( NUMBER == state ) {
-	error_message("'-' or '+' sign inside a number.");
+
+      if( isdigit( line[lineptr] ) ) {
+        value *= 10;
+        value += line[lineptr] - '0';
+        break;
       }
-      if( ALPHA == state ) {
-	error_message("words much be alphabetical.");
+      error_message("errors in number format: ignoring value");
+      state = BLANK;
+      break;
+
+      /* ALPHA state */
+    case ALPHA:
+      if( endcond( line[lineptr] ) ) {
+        str[strptr] = 0;
+	opcode = token(str);
+	if( opcode >= 0 ) {
+	  state = ASSEMBLEHELP;
+	  value = 0;
+	  if( opcode == HALT ) {
+	    sml->memory[sml->iptr] = opcode * OPFACT;
+	    sml->iptr++;
+	    sml->iptr %= MEMSIZE;
+	    state = BLANK;
+	  }
+	} else {
+	  state = BLANK;
+	}
+        if( endstr( line[lineptr] ) ) {
+          return;
+        }
+        break;
       }
-      if( ADDRESS == state ) {
-	error_message("memory addresses don't need signs.");
+      if( isalpha( line[lineptr] ) ) {
+        str[strptr] = tolower(line[lineptr]);
+        strptr++;
+        break;
+      }
+      error_message("garbage in alpha-string: ignoring word");
+      state = BLANK;
+      break;
+
+    case ASSEMBLEHELP:
+      if( endstr(line[lineptr]) ) {
+	return;
+      }
+      if( endcond(line[lineptr]) ) {
+	break;
+      }
+      if( isdigit( line[lineptr]) ) {
+	value = line[lineptr] - '0';
+	state = ASSEMBLE;
+	break;
       }
       state = BLANK;
-      continue;
+      error_message("could not find address");
+      break;
+
+      /* ADDRESS state */
+    case ADDRESS:
+      if( endcond( line[lineptr] ) ) {
+	if( !out_of_bounds(value, 0, MEMSIZE) ) {
+	  sml->iptr = value;
+	} else {
+	  error_message("Invalid address in @ command: staying put");
+	}
+	if( endstr( line[lineptr] ) ) {
+	  return;
+	}
+	state = BLANK;
+	break;
+      }
+      if( isdigit( line[lineptr] ) ) {
+        value *= 10;
+        value += line[lineptr] - '0';
+        break;
+      }
+      error_message("errors in @ command string: ignoring command");
+      state = BLANK;
+      break;
+
+      /* ASSEMBLE state */
+    case ASSEMBLE:
+      if( endcond( line[lineptr] ) ) {
+	state = BLANK;
+	if( !out_of_bounds(value, 0, MEMSIZE) ) {
+	  if( opcode == BREAK ) {
+	    sml->breaktable[value] = 1;
+	    break;
+	  }
+	  if( opcode == CLEAR ) {
+	    sml->breaktable[value] = 0;
+	    break;
+	  }
+	  opcode *= OPFACT;
+	  opcode += value;
+	  sml->memory[sml->iptr] = opcode;
+	  sml->iptr++;
+	} else {
+	  error_message("Invalid address in assembly command: what?");
+	}
+	if( endstr( line[lineptr] ) ) {
+	  return;
+	}
+	break;
+      }
+      if( isdigit( line[lineptr] ) ) {
+        value *= 10;
+        value += line[lineptr] - '0';
+        break;
+      }
+      error_message("errors in assembly command: ignoring command");
+      state = BLANK;
+      break;
+
+    default:
+      state = BLANK;
+      break;
     }
 
-    if( !out_of_bounds(value, 0, MAXVAL) ) {
-      if( negative ) {
-	value *= -1;
-      }
-      sml->memory[sml->iptr++] = value;
-    }
   }
 }
 
@@ -186,7 +220,86 @@ void process() {
  */
 int token(char *str) {
   int val = INVALID;
-
+  if( strcmp(str, "break") == 0 ) {
+    return BREAK;
+  }
+  if( strcmp(str, "clear") == 0 ) {
+    return CLEAR;
+  }
+  if( strcmp(str, "read") == 0 ) {
+    return READ;
+  }
+  if( strcmp(str, "write") == 0 ) {
+    return WRITE;
+  }
+  if( strcmp(str, "lda") == 0 ) {
+    return LOAD;
+  }
+  if( strcmp(str, "sto") == 0 ) {
+    return STORE;
+  }
+  if( strcmp(str, "add") == 0 ) {
+    return ADD;
+  }
+  if( strcmp(str, "sub") == 0 ) {
+    return SUBTRACT;
+  }
+  if( strcmp(str, "mult") == 0 ) {
+    return MULTIPLY;
+  }
+  if( strcmp(str, "div") == 0 ) {
+    return DIVIDE;
+  }
+  if( strcmp(str, "mod") == 0 ) {
+    return MOD;
+  }
+  if( strcmp(str, "inc") == 0 ) {
+    return INC;
+  }
+  if( strcmp(str, "dec") == 0 ) {
+    return DEC;
+  }
+  if( strcmp(str, "jump") == 0 ) {
+    return BRANCH;
+  }
+  if( strcmp(str, "jneg") == 0 ) {
+    return BRANCHNEG;
+  }
+  if( strcmp(str, "jzero") == 0 ) {
+    return BRANCHZERO;
+  }
+  if( strcmp(str, "halt") == 0 ) {
+    return HALT;
+  }
+  if( strcmp(str, "quit") == 0 ) {
+    exit(0);
+  }
+  if( strcmp(str, "step") == 0 ) {
+    sml->stepping = true;
+    sml->running = true;
+    return val;
+  }
+  if( strcmp(str, "go") == 0 ) {
+    sml->iptr = 0;
+    sml->stepping = false;
+    sml->running = true;
+    return val;
+  }
+  if( strcmp(str, "continue") == 0 ) {
+    sml->stepping = false;
+    sml->running = true;
+    return val;
+  }
+  if( strcmp(str, "stop") == 0 ) {
+    sml->stepping = false;
+    sml->running = false;
+    return val;
+  }
+  if( strcmp(str, "wipe") == 0 ) {
+    error_message("");
+    return val;
+  }
+  error_message(str);
   return val;
 }
 
@@ -214,6 +327,20 @@ bool allowedchar(int a) {
     return true;
   default:
     break;
+  }
+  return false;
+}
+
+bool endcond(char a) {
+  if( a == ' ' || a == '\t' || endstr(a) ) {
+    return true;
+  }
+  return false;
+}
+
+bool endstr(char a) {
+  if( a == '#' || a == 0 ) {
+    return true;
   }
   return false;
 }

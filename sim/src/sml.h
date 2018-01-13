@@ -31,8 +31,8 @@ enum OPCODES {
 };
 
 enum PROCESS_STATES {
-  BLANK, NUMBER, ALPHA, ADDRESS,
-  STEP, GO, STOP, BREAK, CONTINUE
+  BLANK, NUMBER, ALPHA, ADDRESS, ASSEMBLE, ASSEMBLEHELP,
+  STEP=MAXOP+1, GO, STOP, BREAK, CONTINUE, CLEAR
 };
 
 /*
@@ -50,11 +50,13 @@ struct machineState {
   int operand;
   int wptr;
   int inbuff[MEMSIZE];
-  int ibc;
+  int inbuff_start;
+  int inbuff_end;
   int memory[MEMSIZE];
   int breaktable[MEMSIZE];
   opPtr inst_tble[MAXOP];
   bool running;
+  bool stepping;
 };
 
 struct out_buffer {
@@ -112,5 +114,7 @@ void resize_out_buffer(int);
 int out_buff_len();
 bool allowedchar(int);
 int token(char *);
+bool endcond(char);
+bool endstr(char);
 
 #endif

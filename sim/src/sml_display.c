@@ -129,10 +129,14 @@ void displaychip() {
   } else {
     mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->acc);
   }
-  if(sml->running == true) {
-    mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
+  if(sml->stepping == true) {
+    mvwprintw(chipwindow, 1, 40, "STEPPING: type CTRL-C to halt");
   } else {
-    mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
+    if(sml->running == true) {
+      mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
+    } else {
+      mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
+    }
   }
 }
 
