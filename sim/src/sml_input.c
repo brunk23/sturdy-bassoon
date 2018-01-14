@@ -150,24 +150,24 @@ void process() {
       /* FILEIO state */
     case FILEIO:
       if( endcond( line[lineptr] ) ) {
-        str[strptr] = 0;
 	state = BLANK;
+	str[strptr] = 0;
 	switch( opcode ) {
 	case DUMPMEM:
 	  if( !(writefile(str) == 0) ) {
 	    error_message(0,"unable to save memory to file",line);
 	  }
-	  break;
+	  return;
 	case DUMPSTATE:
 	  if( !(writestate(str) == 0) ) {
 	    error_message(0,"unable to save state to file",line);
 	  }
-	  break;
+	  return;
 	case RESTOREMEM:
 	  if( !(readfile(str) == 0 ) ) {
 	    error_message(0,"unable to read file to memory",line);
 	  }
-	  break;
+	  return;
 	default:
 	  error_message(0,"bad state in file io",line);
 	  break;
