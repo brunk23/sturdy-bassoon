@@ -370,8 +370,12 @@ int token(char *str) {
     sml->running = false;
     return val;
   }
-  if( strcmp(str, "nodump") == 0 ) {
+  if( strcmp(str, "nodebug") == 0 ) {
     sml->debug  = false;
+    return val;
+  }
+  if( strcmp(str, "debug") == 0 ) {
+    sml->debug  = true;
     return val;
   }
   if( strcmp(str, "dumpmem") == 0 ) {
@@ -391,7 +395,13 @@ int token(char *str) {
     return val;
   }
   if( strcmp(str, "wipe") == 0 ) {
-    error_message(0,0,0);
+    while(out_buffer_head) {
+      out_buffer_tail = out_buffer_head;
+      out_buffer_head = out_buffer_head->next;
+      free(out_buffer_tail);
+    }
+    out_buffer_head = 0;
+    out_buffer_tail = 0;
     return val;
   }
   error_message(0,"Unrecognized string:",str);
