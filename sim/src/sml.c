@@ -144,7 +144,7 @@ int run_loop() {
       } else {
 	value = sml->inst_tble[sml->opcode]();
       }
-      if( sml->stepping || sml->breaktable[sml->iptr] == 1 ) {
+      if( sml->stepping || sml->breaktable[sml->iptr] ) {
 	sml->running = false;
       }
     }
@@ -192,7 +192,6 @@ int init_machine()
   sml->instr = 0;
   sml->opcode = 0;
   sml->operand = 0;
-  sml->wptr = 0;
   sml->running = false;
   sml->stepping = false;
   sml->debug = false;
@@ -200,7 +199,7 @@ int init_machine()
   sml->inbuff_end = 0;
   for(i = 0; i < MEMSIZE; ++i) {
     sml->inbuff[i] = 0;
-    sml->breaktable[i] = 0;
+    sml->breaktable[i] = false;
     sml->memory[i] = 0;
   }
   return 0;

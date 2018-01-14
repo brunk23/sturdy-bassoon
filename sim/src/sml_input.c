@@ -7,21 +7,6 @@
 char line[BUFFSIZE + 1];
 int buffptr = 0;
 
-/*
- * This will process commands and all input. Numbers
- * will be added directly to memory where readptr is
- * pointing.
- *
- * This will eventually compile very simple
- * assembly. Ex. read ## -> 10##
- *
- * This will also take commands that effect the machine
- * state.
- * "go" (which sets the iptr to 0 and runs)
- * "continue" (which runs without changing iptr)
- * "step" (sets iptr to 0 and stops after each step)
- * "break ##" (sets a breakpoint when iptr hits ##)
- */
 void process() {
   char str[BUFFSIZE+1];
   int value = 0, opcode = 0, state = BLANK;
@@ -266,11 +251,11 @@ void process() {
 	}
 	if( !out_of_bounds(value, 0, MEMSIZE) ) {
 	  if( opcode == BREAK ) {
-	    sml->breaktable[value] = 1;
+	    sml->breaktable[value] = true;
 	    break;
 	  }
 	  if( opcode == CLEAR ) {
-	    sml->breaktable[value] = 0;
+	    sml->breaktable[value] = false;
 	    break;
 	  }
 	  opcode *= OPFACT;
@@ -325,7 +310,7 @@ int token(char *str) {
   if( strcmp(str, "lda") == 0 ) {
     return LOAD;
   }
-  if( strcmp(str, "sto") == 0 ) {
+  if( strcmp(str, "sta") == 0 ) {
     return STORE;
   }
   if( strcmp(str, "add") == 0 ) {

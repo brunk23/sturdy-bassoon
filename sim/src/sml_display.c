@@ -135,14 +135,10 @@ void displaychip() {
   } else {
     mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->acc);
   }
-  if(sml->stepping == true) {
-    mvwprintw(chipwindow, 1, 40, "STEPPING: type CTRL-C to halt");
+  if(sml->running == true || sml->stepping == true) {
+    mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
   } else {
-    if(sml->running == true) {
-      mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
-    } else {
-      mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
-    }
+    mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
   }
   switch( sml->memory[ sml->iptr ] / OPFACT ) {
   case READ:
@@ -155,7 +151,7 @@ void displaychip() {
     n = "lda";
     break;
   case STORE:
-    n = "sto";
+    n = "sta";
     break;
   case ADD:
     n = "add";

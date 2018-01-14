@@ -1,29 +1,21 @@
 #include "sml.h"
 
-/*
- * Add all input and string processing stuff here.  Handle all
- * complete strings.  Move process(line) into here.
- */
-
 // load operation
-int opcode_load()
-{
-  sml->iptr++;		// increment the instruction counter
+int opcode_load() {
+  sml->iptr++;
   sml->acc = sml->memory[sml->operand];
   return 0;
 }
 
 // store operation
-int opcode_store()
-{
-  sml->iptr++;		// increment the instruction counter
+int opcode_store() {
+  sml->iptr++;
   sml->memory[sml->operand] = sml->acc;
   return 0;
 }
 
 // simple operation
-int opcode_read()
-{
+int opcode_read() {
   /* There is no input at this time */
   if( sml->inbuff_start == sml->inbuff_end ) {
     return 0;
@@ -35,8 +27,7 @@ int opcode_read()
   return 0;
 }
 
-int opcode_write()
-{
+int opcode_write() {
   output_value(sml->memory[sml->operand]);
   sml->iptr++;
   return 0;

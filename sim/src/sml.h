@@ -19,9 +19,6 @@ typedef int (*opPtr)();
 /*
  * Not all these opcodes were part of the original spec.
  *   Extended Opcodes Include: INC, DEC, MOD
- *
- *   STEP, GO, STOP, BREAK, CONTINUE are simulator commands
- *   These values will never be valid memory values
  */
 enum OPCODES {
   READ = 10, WRITE,
@@ -31,35 +28,28 @@ enum OPCODES {
 };
 
 enum PROCESS_STATES {
-  BLANK, NUMBER, ALPHA, ADDRESS, ASSEMBLE, ASSEMBLEHELP,
+  BLANK, NUMBER, ALPHA, ADDRESS,
+  ASSEMBLE, ASSEMBLEHELP,
   FILEIO, FILEIOHELP,
   STEP=MAXOP+1, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
   DUMPMEM, DUMPSTATE, RESTOREMEM
 };
 
-/*
- * breaktable will hold a value for each address.
- * If the value is 0, the machine will not break
- * there. If the value is positive, it will decrement
- * and break (so it only stops once--used for stepping).
- * If it is negative it will always break there.
- */
 struct machineState {
-  int acc;
-  int iptr;
-  int instr;
-  int opcode;
-  int operand;
-  int wptr;
-  int inbuff[MEMSIZE];
-  int inbuff_start;
-  int inbuff_end;
-  int memory[MEMSIZE];
-  int breaktable[MEMSIZE];
-  opPtr inst_tble[MAXOP];
-  bool running;
-  bool stepping;
-  bool debug;
+  int acc;			/* accumulator */
+  int iptr;			/* instruction pointer */
+  int instr;			/* current instruction code */
+  int opcode;			/* the opcode itself */
+  int operand;			/* the memory address to work on */
+  int inbuff[MEMSIZE];		/* saves input until we need it */
+  int inbuff_start;		/* next number to give program */
+  int inbuff_end;		/* last number read from user */
+  int memory[MEMSIZE];		/* the memory for the machine */
+  bool breaktable[MEMSIZE];	/* the places to break */
+  opPtr inst_tble[MAXOP];	/* a jump table for opcodes */
+  bool running;			/* is the chip running */
+  bool stepping;		/* should we stop after each instruction */
+  bool debug;			/* dump the state of the machine at exit */
 };
 
 struct out_buffer {
