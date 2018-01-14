@@ -157,16 +157,20 @@ void process() {
 	  if( !(writefile(str) == 0) ) {
 	    error_message(0,"unable to save memory to file",line);
 	  }
-	  return;
+	  break;
 	case DUMPSTATE:
 	  if( !(writestate(str) == 0) ) {
 	    error_message(0,"unable to save state to file",line);
 	  }
-	  return;
+	  break;
 	case RESTOREMEM:
 	  if( !(readfile(str) == 0 ) ) {
 	    error_message(0,"unable to read file to memory",line);
 	  }
+	  /* This thrashes the line buffer, so always return
+	   * We could preserve the buffer and restore it but
+	   * that seems excessive for something that won't likely
+	   * be used by people */
 	  return;
 	default:
 	  error_message(0,"bad state in file io",line);
