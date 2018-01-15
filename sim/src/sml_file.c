@@ -4,20 +4,22 @@
 int readfile(char *filename) {
   int i;
   FILE *fp;
+  char fileline[BUFFSIZE+1];
+
   fp = fopen(filename, "r");
   if( fp == 0 ) {
     return 1;
   }
   sml->iptr = 0;
 
-  while( fgets(line, BUFFSIZE, fp) ) {
+  while( fgets(fileline, BUFFSIZE, fp) ) {
     for( i = 0; i < BUFFSIZE; i++ ) {
-      if( line[i] == '\n' ) {
-	line[i] = 0;
+      if( fileline[i] == '\n' ) {
+	fileline[i] = 0;
 	break;
       }
     }
-    process();
+    process(fileline);
   }
 
   fclose(fp);

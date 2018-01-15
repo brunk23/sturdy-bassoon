@@ -4,10 +4,11 @@
 
 #include "sml.h"
 
-char line[BUFFSIZE + 1];
+char userline[BUFFSIZE + 1];
 int buffptr = 0;
 
-void process() {
+void process(char *line) {
+  static bool infileoper = false;
   char str[BUFFSIZE+1];
   int value = 0, opcode = 0, state = BLANK;
   unsigned int lineptr, strptr = 0;
@@ -15,6 +16,7 @@ void process() {
 
   error_message(0,0,0);
   buffptr = 0;
+
   for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
 
     switch( state ) {
@@ -23,6 +25,7 @@ void process() {
       if( endstr( line[lineptr] ) ) {
 	return;
       }
+
       if( isalpha( line[lineptr] ) ) {
 	strptr = 0;
 	str[strptr] = tolower(line[lineptr]);
@@ -30,7 +33,11 @@ void process() {
 	state = ALPHA;
 	break;
       }
-      if(isdigit(line[lineptr])|| line[lineptr] == '-' || line[lineptr] == '+') {
+
+      if( isdigit(line[lineptr]) ||
+	  line[lineptr] == '-' ||
+	  line[lineptr] == '+') {
+
 	negative = false;
 	if( line[lineptr] == '-' ) {
 	  negative = true;
@@ -43,6 +50,7 @@ void process() {
 	state = NUMBER;
 	break;
       }
+
       if( line[lineptr] == '@' ) {
 	negative = false;
 	value = 0;
@@ -69,7 +77,7 @@ void process() {
 	    sml->inbuff_end %= MEMSIZE;
 	  }
 	} else {
-	  error_message("number out of range:","ignoring",line);
+	  error_message("Number out of range:","Ignoring",line);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -82,7 +90,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in number format:","ignoring value",line);
+      error_message("Errors in number format:","Ignoring value",line);
       state = BLANK;
       break;
 
@@ -124,7 +132,7 @@ void process() {
         strptr++;
         break;
       }
-      error_message("garbage in alpha-string:","ignoring word",line);
+      error_message("Garbage in command word:","Ignoring word",line);
       state = BLANK;
       break;
 
@@ -144,7 +152,7 @@ void process() {
 	break;
       }
       state = BLANK;
-      error_message(0,"could not find address",line);
+      error_message("Could not find address",line,0);
       break;
 
       /* FILEIO state */
@@ -152,29 +160,29 @@ void process() {
       if( endcond( line[lineptr] ) ) {
 	state = BLANK;
 	str[strptr] = 0;
-	switch( opcode ) {
-	case DUMPMEM:
-	  if( !(writefile(str) == 0) ) {
-	    error_message(0,"unable to save memory to file",line);
+	if( !infileoper ) {
+	  infileoper = true;
+	  switch( opcode ) {
+	  case DUMPMEM:
+	    if( !(writefile(str) == 0) ) {
+	      error_message("Unable to save memory to file",line,0);
+	    }
+	    break;
+	  case DUMPSTATE:
+	    if( !(writestate(str) == 0) ) {
+	      error_message("Unable to save state to file",line,0);
+	    }
+	    break;
+	  case RESTOREMEM:
+	    if( !(readfile(str) == 0 ) ) {
+	      error_message("Unable to read file to memory",line,0);
+	    }
+	    break;
+	  default:
+	    error_message("Bad state in file io",line,0);
+	    break;
 	  }
-	  break;
-	case DUMPSTATE:
-	  if( !(writestate(str) == 0) ) {
-	    error_message(0,"unable to save state to file",line);
-	  }
-	  break;
-	case RESTOREMEM:
-	  if( !(readfile(str) == 0 ) ) {
-	    error_message(0,"unable to read file to memory",line);
-	  }
-	  /* This thrashes the line buffer, so always return
-	   * We could preserve the buffer and restore it but
-	   * that seems excessive for something that won't likely
-	   * be used by people */
-	  return;
-	default:
-	  error_message(0,"bad state in file io",line);
-	  break;
+	  infileoper = false;
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -186,7 +194,7 @@ void process() {
         strptr++;
         break;
       }
-      error_message("bad file name:","command ignored",line);
+      error_message("Bad file name:","Command ignored",line);
       state = BLANK;
       break;
 
@@ -212,7 +220,7 @@ void process() {
 	break;
       }
       state = BLANK;
-      error_message(0,"could not find address",line);
+      error_message("Could not find address",line,0);
       break;
 
       /* ADDRESS state */
@@ -221,7 +229,7 @@ void process() {
 	if( !out_of_bounds(value, 0, MEMSIZE) ) {
 	  sml->iptr = value;
 	} else {
-	  error_message("Invalid address in @ command:","staying put",line);
+	  error_message("Invalid address in @ command:","Staying put",line);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -234,7 +242,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in @ command string:","ignoring command",line);
+      error_message("Errors in @ command string:","Ignoring command",line);
       state = BLANK;
       break;
 
@@ -249,7 +257,7 @@ void process() {
 	  if( !out_of_bounds(value, MINVAL, MAXVAL) ) {
 	    sml->acc = value;
 	  } else {
-	    error_message(0,"unable to set accumulator",line);
+	    error_message("Unable to set accumulator",line,0);
 	  }
 	  break;
 	}
@@ -267,7 +275,7 @@ void process() {
 	  sml->memory[sml->iptr] = opcode;
 	  sml->iptr++;
 	} else {
-	  error_message("Invalid address in assembly command:","what?",line);
+	  error_message("Invalid address in assembly command:",line,0);
 	}
 	if( endstr( line[lineptr] ) ) {
 	  return;
@@ -279,7 +287,7 @@ void process() {
         value += line[lineptr] - '0';
         break;
       }
-      error_message("errors in assembly command:","ignoring command",line);
+      error_message("Errors in assembly command:","Ignoring command",line);
       state = BLANK;
       break;
 
@@ -408,7 +416,7 @@ int token(char *str) {
     out_buffer_tail = 0;
     return val;
   }
-  error_message(0,"Unrecognized string:",str);
+  error_message("Unrecognized string:",str,0);
   return val;
 }
 

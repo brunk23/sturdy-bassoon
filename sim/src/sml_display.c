@@ -87,9 +87,9 @@ void updatescreen() {
   mvwaddstr(messagewindow, 0, width/2 - 10, "Messages");
 
   if( sml->running ) {
-    mvwprintw(inputwindow, 1, 2, "INPUT: %s_", line);
+    mvwprintw(inputwindow, 1, 2, "INPUT: %s_", userline);
   } else {
-    mvwprintw(inputwindow, 1, 2, "COMMAND: %s_", line);
+    mvwprintw(inputwindow, 1, 2, "COMMAND: %s_", userline);
   }
 
   wnoutrefresh(chipwindow);

@@ -60,7 +60,7 @@ struct out_buffer {
 extern struct out_buffer *out_buffer_head;
 extern struct out_buffer *out_buffer_tail;
 extern int out_buffer_max_length;
-extern char line[];
+extern char userline[];
 extern int buffptr;
 extern struct machineState *sml;
 extern WINDOW *memwindow;
@@ -101,7 +101,7 @@ int opcode_load();
 int opcode_store();
 int opcode_read();
 int opcode_write();
-void process();
+void process(char *);
 void output_value(int);
 void resize_out_buffer(int);
 int out_buff_len();

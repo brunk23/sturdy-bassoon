@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   buffptr = 0;
 
   for( i = 0; i < BUFFSIZE+1; i++) {
-    line[i] = 0;
+    userline[i] = 0;
   }
 
   sml = (struct machineState *)malloc(sizeof(struct machineState));
@@ -93,9 +93,9 @@ int run_loop() {
     if( key != ERR ) {
       update = true;
       if( key == '\n' ) {
-	process();
+	process(userline);
 	for( i = 0; i < BUFFSIZE; i++ ) {
-	  line[i] = 0;
+	  userline[i] = 0;
 	}
 	continue;
       }
@@ -110,7 +110,7 @@ int run_loop() {
       if( key == KEY_BACKSPACE || key == KEY_DC || key == 127 ) {
 	if( buffptr > 0 ) {
 	  buffptr--;
-	  line[buffptr] = 0;
+	  userline[buffptr] = 0;
 	} else {
 	  beep();
 	}
@@ -118,12 +118,12 @@ int run_loop() {
       }
 
       if( allowedchar(key) ) {
-	line[buffptr] = key;
+	userline[buffptr] = key;
 	buffptr++;
 	if(buffptr == BUFFSIZE-1) {
 	  buffptr--;
 	}
-	line[buffptr] = 0;
+	userline[buffptr] = 0;
       } else {
 	beep();
       }
