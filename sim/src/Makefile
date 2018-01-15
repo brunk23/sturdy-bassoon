@@ -4,7 +4,7 @@ SIMC = *.c
 SIMH = *.h
 
 sml_sim: $(SIMC) $(SIMH)
-	gcc -g -Wall -lncurses -o SML $(SIMC)
+	gcc -g -Wall -O2 -lncurses -o SML $(SIMC)
 
 clean:
 	rm *.o
