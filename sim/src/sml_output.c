@@ -47,6 +47,7 @@ void output_value(int value) {
 
   out_buffer_tail->next = tmp;
   out_buffer_tail = tmp;
+  displayoutput();
 }
 
 /*
@@ -67,6 +68,7 @@ void resize_out_buffer(int max) {
       free(tmp);
     }
   }
+  displayoutput();
 }
 
 int out_buff_len() {

@@ -12,11 +12,11 @@ WINDOW *inputwindow;
 WINDOW *outputwindow;
 
 void term_resize() {
-  delwin(memwindow);
+  /*delwin(memwindow);
   delwin(chipwindow);
   delwin(messagewindow);
   delwin(inputwindow);
-  delwin(outputwindow);
+  delwin(outputwindow);*/
 
   endwin();
   refresh();
@@ -25,6 +25,8 @@ void term_resize() {
   refresh();
   updatescreen();
   displaymem();
+  displayoutput();
+  error_message(0,0,0);
 }
 
 void sig_int(int in) {
@@ -68,24 +70,18 @@ int init_windows() {
 
 void updatescreen() {
   werase(chipwindow);
-  werase(outputwindow);
   werase(inputwindow);
 
   displaychip();
-  displayoutput();
 
   wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
 
   /*
    * Add titles to each window
    */
   mvwaddstr(chipwindow, 0, (getmaxx(chipwindow)-14)/2, "Simpletron CPU");
-  mvwaddstr(outputwindow, 0, (getmaxx(outputwindow)-6)/2, "OUTPUT");
   mvwaddstr(inputwindow, 0, (getmaxx(inputwindow)-5)/2, "INPUT");
-  mvwaddstr(messagewindow, 0, (getmaxx(messagewindow)-8)/2, "MESSAGES");
 
   if( sml->running ) {
     mvwprintw(inputwindow, 1, 2, "INPUT: %s_", userline);
@@ -94,20 +90,22 @@ void updatescreen() {
   }
 
   wnoutrefresh(chipwindow);
-  wnoutrefresh(outputwindow);
   wnoutrefresh(inputwindow);
-  wnoutrefresh(messagewindow);
 }
 
 void displayoutput() {
   int i = 1;
   struct out_buffer *tmp = out_buffer_head;
 
+  werase(outputwindow);
+  wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwaddstr(outputwindow, 0, (getmaxx(outputwindow)-6)/2, "OUTPUT");
   while(tmp) {
     mvwprintw(outputwindow, i, 2, "%4i", tmp->value);
     tmp = tmp->next;
     i++;
   }
+  wnoutrefresh(outputwindow);
 }
 
 /*
@@ -219,6 +217,8 @@ void displaychip() {
 
 void error_message(char *line1, char *line2, char *line3) {
   werase(messagewindow);
+  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwaddstr(messagewindow, 0, (getmaxx(messagewindow)-8)/2, "MESSAGES");
   if( line1 ) {
     mvwaddstr(messagewindow, 1, 2, line1);
   }

@@ -423,6 +423,7 @@ int token(char *str) {
     }
     out_buffer_head = 0;
     out_buffer_tail = 0;
+    displayoutput();
     return val;
   }
   error_message("Unrecognized string:",str,0);
