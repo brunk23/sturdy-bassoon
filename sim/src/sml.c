@@ -33,9 +33,8 @@ int main(int argc, char *argv[])
 
   initscr();
   refresh();
-  init_windows();
+  term_resize();
 
-  signal(SIGWINCH, sig_winch);
   signal(SIGINT, sig_int);
   atexit(cleanup);
 
@@ -84,14 +83,20 @@ int run_loop() {
   sml->iptr = 0;
   sml->running = false;
   while ( true ) {
-    if( update) {
+    if( update ) {
       updatescreen();
     }
+    doupdate();
     update = false;
 
     key = getch();
     if( key != ERR ) {
       update = true;
+      if( key == KEY_RESIZE ) {
+	term_resize();
+	continue;
+      }
+
       if( key == '\n' ) {
 	process(userline);
 	for( i = 0; i < BUFFSIZE; i++ ) {
@@ -129,11 +134,6 @@ int run_loop() {
       }
     }
 
-    if(sml->iptr == MEMSIZE) {
-      error_message(0,"IPTR OVERRAN MEMORY",0);
-      value = 1;		// magic number again
-      break;
-    }
     if( sml->running ) {
       update = true;
       sml->instr = sml->memory[sml->iptr];
@@ -143,6 +143,7 @@ int run_loop() {
 	opcode_invalid();
       } else {
 	value = sml->inst_tble[sml->opcode]();
+	update_mem_addr(sml->operand);
       }
       if( sml->stepping || sml->breaktable[sml->iptr] ) {
 	sml->running = false;

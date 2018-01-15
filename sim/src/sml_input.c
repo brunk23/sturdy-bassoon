@@ -69,6 +69,7 @@ void process(char *line) {
 	  }
 	  if( sml->running == false && sml->stepping == false ) {
 	    sml->memory[sml->iptr] = value;
+	    update_mem_addr(sml->iptr);
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	  } else {
@@ -106,6 +107,7 @@ void process(char *line) {
 	  switch( opcode ) {
 	  case HALT:
 	    sml->memory[sml->iptr] = opcode * OPFACT;
+	    update_mem_addr(sml->iptr);
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	    state = BLANK;
@@ -273,6 +275,7 @@ void process(char *line) {
 	  opcode *= OPFACT;
 	  opcode += value;
 	  sml->memory[sml->iptr] = opcode;
+	  update_mem_addr(sml->iptr);
 	  sml->iptr++;
 	} else {
 	  error_message("Invalid address in assembly command:",line,0);
@@ -404,6 +407,12 @@ int token(char *str) {
   }
   if( strcmp(str, "reset") == 0 ) {
     init_machine();
+    displaymem();
+    return val;
+  }
+  /* debugging purposes */
+  if( strcmp(str, "displaymem") == 0 ) {
+    displaymem();
     return val;
   }
   if( strcmp(str, "wipe") == 0 ) {

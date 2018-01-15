@@ -11,12 +11,20 @@ WINDOW *messagewindow;
 WINDOW *inputwindow;
 WINDOW *outputwindow;
 
-void sig_winch(int in) {
+void term_resize() {
+  delwin(memwindow);
+  delwin(chipwindow);
+  delwin(messagewindow);
+  delwin(inputwindow);
+  delwin(outputwindow);
+
   endwin();
   refresh();
   erase();
   init_windows();
+  refresh();
   updatescreen();
+  displaymem();
 }
 
 void sig_int(int in) {
@@ -41,7 +49,8 @@ int init_windows() {
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();
-    fprintf(stderr,"FATAL: Screen is not big enough for this sim.\n");
+    fprintf(stderr,"FATAL:\tScreen is not big enough for this sim.\n");
+    fprintf(stderr,"\tWe need %i rows, and %i cols.\n",MINHEIGHT, MINWIDTH);
     exit(1);
   }
 
@@ -58,33 +67,25 @@ int init_windows() {
 }
 
 void updatescreen() {
-  int width;
-
   werase(chipwindow);
   werase(outputwindow);
-  werase(memwindow);
   werase(inputwindow);
 
-  width = getmaxx(stdscr);
-
-  displaymem();
   displaychip();
   displayoutput();
 
   wborder(chipwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
   wborder(inputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
 
   /*
    * Add titles to each window
    */
-  mvwaddstr(chipwindow, 0, width/2 - 10, "Simpletron");
-  mvwaddstr(outputwindow, 0, 2, "OUTPUT");
-  mvwaddstr(memwindow, 0, width/2 - 8, "MEMORY");
-  mvwaddstr(inputwindow, 0, width/2 - 7, "INPUT");
-  mvwaddstr(messagewindow, 0, width/2 - 10, "Messages");
+  mvwaddstr(chipwindow, 0, (getmaxx(chipwindow)-14)/2, "Simpletron CPU");
+  mvwaddstr(outputwindow, 0, (getmaxx(outputwindow)-6)/2, "OUTPUT");
+  mvwaddstr(inputwindow, 0, (getmaxx(inputwindow)-5)/2, "INPUT");
+  mvwaddstr(messagewindow, 0, (getmaxx(messagewindow)-8)/2, "MESSAGES");
 
   if( sml->running ) {
     mvwprintw(inputwindow, 1, 2, "INPUT: %s_", userline);
@@ -94,10 +95,8 @@ void updatescreen() {
 
   wnoutrefresh(chipwindow);
   wnoutrefresh(outputwindow);
-  wnoutrefresh(memwindow);
   wnoutrefresh(inputwindow);
   wnoutrefresh(messagewindow);
-  doupdate();
 }
 
 void displayoutput() {
@@ -111,10 +110,16 @@ void displayoutput() {
   }
 }
 
+/*
+ * We want to avoid calling this for every update loop.
+ * Instead, we want to only update memory that changes.
+ * This is not working on screen resizing. I don't know
+ * why.
+ */
 void displaymem() {
   int i;
-
-  mvwprintw(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
+  werase(memwindow);
+  mvwaddstr(memwindow, 1, 8, "00     01     02     03     04     05     06     07     08     09");
   for( i = 0; i < MEMSIZE; i++ ) {
     if( (i % 10) == 0 ) {
       mvwprintw(memwindow, i / 10 + 2, 1, "%02i:", i);
@@ -125,6 +130,21 @@ void displaymem() {
       mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "-%04i",-1*sml->memory[i]);
     }
   }
+  wborder(memwindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwaddstr(memwindow, 0, (getmaxx(memwindow)-17)/2, "Simpletron MEMORY");
+  wnoutrefresh(memwindow);
+}
+
+/*
+ * This will just display the memory address that has changed
+ */
+void update_mem_addr(int i) {
+  if(sml->memory[i] >= 0 ) {
+    mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "+%04i",sml->memory[i]);
+  } else {
+    mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "-%04i",-1*sml->memory[i]);
+  }
+  wnoutrefresh(memwindow);
 }
 
 void displaychip() {
@@ -136,9 +156,9 @@ void displaychip() {
     mvwprintw(chipwindow, 1, 20, "Accumulator: -%04i", -1*sml->acc);
   }
   if(sml->running == true || sml->stepping == true) {
-    mvwprintw(chipwindow, 1, 40, "RUNNING: type CTRL-C to halt");
+    mvwprintw(chipwindow, 1, 40, "{RUNNING} type CTRL-C to halt");
   } else {
-    mvwprintw(chipwindow, 1, 40, "HALTED: type CTRL-G to run");
+    mvwprintw(chipwindow, 1, 40, "{HALTED} type CTRL-G to run");
   }
   switch( sml->memory[ sml->iptr ] / OPFACT ) {
   case READ:
@@ -200,13 +220,13 @@ void displaychip() {
 void error_message(char *line1, char *line2, char *line3) {
   werase(messagewindow);
   if( line1 ) {
-    mvwprintw(messagewindow, 1, 2, line1);
+    mvwaddstr(messagewindow, 1, 2, line1);
   }
   if( line2 ) {
-    mvwprintw(messagewindow, 2, 2, line2);
+    mvwaddstr(messagewindow, 2, 2, line2);
   }
   if( line3 ) {
-    mvwprintw(messagewindow, 3, 2, line3);
+    mvwaddstr(messagewindow, 3, 2, line3);
   }
   wnoutrefresh(messagewindow);
 }
