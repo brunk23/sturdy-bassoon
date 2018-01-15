@@ -12,12 +12,6 @@ WINDOW *inputwindow;
 WINDOW *outputwindow;
 
 void term_resize() {
-  /*delwin(memwindow);
-  delwin(chipwindow);
-  delwin(messagewindow);
-  delwin(inputwindow);
-  delwin(outputwindow);*/
-
   endwin();
   refresh();
   erase();
