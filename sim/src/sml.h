@@ -4,8 +4,8 @@
 #include <ncurses.h>
 
 #define VERSION "1.02"
-#define MINWIDTH 85
-#define MINHEIGHT 25
+#define MINWIDTH 80
+#define MINHEIGHT 24
 #define INVALID -1
 #define BUFFSIZE 80
 #define MEMSIZE 100
