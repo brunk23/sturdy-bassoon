@@ -8,7 +8,7 @@
 int opcode_add() {
   sml->iptr++;
   sml->acc += sml->memory[sml->operand];
-  if(sml->acc > MAXVAL) {
+  if(sml->acc > MAXVAL || sml->acc < MINVAL) {
     sml->acc %= (MAXOP*OPFACT);
   }
   return 0;
@@ -18,7 +18,7 @@ int opcode_add() {
 int opcode_subtract() {
   sml->iptr++;
   sml->acc -= sml->memory[sml->operand];
-  if(sml->acc > MAXVAL) {
+  if(sml->acc > MAXVAL || sml->acc < MINVAL) {
     sml->acc %= (MAXOP*OPFACT);
   }
   return 0;
@@ -28,7 +28,7 @@ int opcode_subtract() {
 int opcode_multiply() {
   sml->iptr++;
   sml->acc *= sml->memory[sml->operand];
-  if(sml->acc > MAXVAL) {
+  if(sml->acc > MAXVAL || sml->acc < MINVAL) {
     sml->acc %= (MAXOP*OPFACT);
   }
   return 0;
@@ -70,7 +70,7 @@ int opcode_inc() {
 int opcode_dec() {
   sml->iptr++;
   sml->memory[sml->operand]--;
-  if(sml->memory[sml->operand] > MAXVAL) {
+  if(sml->memory[sml->operand] < MINVAL) {
     sml->memory[sml->operand] %= (MAXOP * OPFACT);
   }
   return 0;
