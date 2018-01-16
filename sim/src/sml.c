@@ -31,9 +31,12 @@ int main(int argc, char *argv[])
     return value;
   }
 
-  initscr();
-  refresh();
-  term_resize();
+  init_windows();
+  updatescreen();
+  displaymem();
+  displayoutput();
+  error_message(0,0,0);
+
 
   signal(SIGINT, sig_int);
   atexit(cleanup);
@@ -89,7 +92,7 @@ int run_loop() {
     doupdate();
     update = false;
 
-    key = getch();
+    key = wgetch(inputwindow);
     if( key != ERR ) {
       update = true;
       if( key == KEY_RESIZE ) {
@@ -155,8 +158,7 @@ int run_loop() {
   return value;
 }
 
-int init_machine()
-{
+int init_machine() {
   int i;
   // Unsupported OPCODES crash the machine.
   for(i = 0; i < MAXOP; ++i) {

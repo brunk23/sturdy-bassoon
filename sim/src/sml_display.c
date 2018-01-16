@@ -12,10 +12,29 @@ WINDOW *inputwindow;
 WINDOW *outputwindow;
 
 void term_resize() {
+  int height, width;
+  delwin(chipwindow);
+  delwin(messagewindow);
+  delwin(memwindow);
+  delwin(inputwindow);
+  delwin(outputwindow);
   endwin();
   refresh();
+  getmaxyx(stdscr, height, width);
   erase();
-  init_windows();
+
+  if( height < MINHEIGHT || width < MINWIDTH ) {
+    endwin();
+    fprintf(stderr,"FATAL:\tScreen is not big enough for this sim.\n");
+    fprintf(stderr,"\tWe need %i rows, and %i cols.\n",MINHEIGHT, MINWIDTH);
+    exit(1);
+  }
+
+  chipwindow = newwin(4, width-10, 0, 0);
+  messagewindow = newwin(5, width-10, 4, 0);
+  memwindow = newwin(13, width-10, 9, 0);
+  inputwindow = newwin(3, width-10, 22, 0);
+  outputwindow = newwin(height, 10, 0, width - 10);
   refresh();
   updatescreen();
   displaymem();
@@ -31,17 +50,20 @@ void sig_int(int in) {
 int init_windows() {
   int height, width;
 
+  initscr();
+  refresh();
+
   getmaxyx(stdscr, height, width);
   resize_out_buffer(height - 2);
 
   /*
    * These set the input handling up correctly
    */
-  nodelay(stdscr, TRUE);
-  keypad(stdscr, TRUE);
   cbreak();
   noecho();
   curs_set(0);
+  nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();
