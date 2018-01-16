@@ -75,7 +75,8 @@ void updatescreen() {
    * Add titles to each window
    */
   mvwaddstr(chipwindow, 0, (getmaxx(chipwindow)-14)/2, "Simpletron CPU");
-  mvwaddstr(inputwindow, 0, (getmaxx(inputwindow)-5)/2, "INPUT");
+  mvwaddstr(chipwindow, 2, getmaxx(chipwindow)-6, VERSION);
+  mvwaddstr(chipwindow, 0, (getmaxx(inputwindow)-5)/2, "INPUT");
 
   if( sml->running ) {
     mvwprintw(inputwindow, 1, 2, "INPUT: %s_", userline);
