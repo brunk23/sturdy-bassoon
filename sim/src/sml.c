@@ -148,6 +148,7 @@ int run_loop() {
       }
       if( sml->stepping || sml->breaktable[sml->iptr] ) {
 	sml->running = false;
+	sml->stepping = false;
       }
     }
   }
