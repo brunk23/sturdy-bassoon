@@ -62,8 +62,8 @@ int init_windows() {
   cbreak();
   noecho();
   curs_set(0);
-  nodelay(stdscr, TRUE);
-  keypad(stdscr, TRUE);
+  nodelay(inputwindow, TRUE);
+  keypad(inputwindow, TRUE);
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();

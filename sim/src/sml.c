@@ -92,7 +92,7 @@ int run_loop() {
     doupdate();
     update = false;
 
-    key = wgetch(inputwindow);
+    key = mvwgetch(inputwindow, 1, 1);
     if( key != ERR ) {
       update = true;
       if( key == KEY_RESIZE ) {
