@@ -35,6 +35,16 @@ void term_resize() {
   memwindow = newwin(13, width-10, 9, 0);
   inputwindow = newwin(3, width-10, 22, 0);
   outputwindow = newwin(height, 10, 0, width - 10);
+
+  /*
+   * These set the input handling up correctly
+   */
+  cbreak();
+  noecho();
+  curs_set(0);
+  nodelay(inputwindow, TRUE);
+  keypad(inputwindow, TRUE);
+
   refresh();
   updatescreen();
   displaymem();
@@ -56,15 +66,6 @@ int init_windows() {
   getmaxyx(stdscr, height, width);
   resize_out_buffer(height - 2);
 
-  /*
-   * These set the input handling up correctly
-   */
-  cbreak();
-  noecho();
-  curs_set(0);
-  nodelay(inputwindow, TRUE);
-  keypad(inputwindow, TRUE);
-
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();
     fprintf(stderr,"FATAL:\tScreen is not big enough for this sim.\n");
@@ -80,6 +81,15 @@ int init_windows() {
   memwindow = newwin(13, width-10, 9, 0);
   inputwindow = newwin(3, width-10, 22, 0);
   outputwindow = newwin(height, 10, 0, width - 10);
+
+  /*
+   * These set the input handling up correctly
+   */
+  cbreak();
+  noecho();
+  curs_set(0);
+  nodelay(inputwindow, TRUE);
+  keypad(inputwindow, TRUE);
 
   return 0;
 }
@@ -128,8 +138,6 @@ void displayoutput() {
 /*
  * We want to avoid calling this for every update loop.
  * Instead, we want to only update memory that changes.
- * This is not working on screen resizing. I don't know
- * why.
  */
 void displaymem() {
   int i;

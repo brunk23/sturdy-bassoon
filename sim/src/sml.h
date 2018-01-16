@@ -3,7 +3,7 @@
 
 #include <ncurses.h>
 
-#define VERSION "1.01"
+#define VERSION "1.02"
 #define MINWIDTH 85
 #define MINHEIGHT 25
 #define INVALID -1

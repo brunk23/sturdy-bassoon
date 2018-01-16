@@ -42,11 +42,11 @@ void output_value(int value) {
   if( out_buffer_head == 0 ) {
     out_buffer_head = tmp;
     out_buffer_tail = tmp;
-    return;
+  } else {
+    out_buffer_tail->next = tmp;
+    out_buffer_tail = tmp;
   }
 
-  out_buffer_tail->next = tmp;
-  out_buffer_tail = tmp;
   displayoutput();
 }
 
