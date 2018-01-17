@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "sml.h"
 
 int readfile(char *filename) {
@@ -29,6 +30,19 @@ int readfile(char *filename) {
 int writefile(char *filename) {
   int i, j;
   FILE *fp;
+
+  if(!access(filename, F_OK)) {
+    error_message("It looks like the file exists already.",
+		  "Type 'y' to overwrite it. Any other key to cancel.",
+		  filename);
+    doupdate();
+    nodelay(messagewindow, FALSE);
+    i = wgetch(messagewindow);
+    if( !(i == 'y' || i == 'Y') ) {
+      error_message("File",filename,"NOT written.");
+      return 0;
+    }
+  }
   fp = fopen(filename, "w");
   if( fp == 0 ) {
     return 1;
@@ -41,6 +55,7 @@ int writefile(char *filename) {
     fprintf(fp,"%04i\n", sml->memory[i*10+j]);
   }
 
+  error_message("File",filename,"written");
   fclose(fp);
   return 0;
 }
@@ -48,6 +63,20 @@ int writefile(char *filename) {
 int writestate(char *filename) {
   int i, j;
   FILE *fp;
+
+  if(!access(filename, F_OK)) {
+    error_message("It looks like the file exists already.",
+		  "Type 'y' to overwrite it. Any other key to cancel.",
+		  filename);
+    doupdate();
+    nodelay(messagewindow, FALSE);
+    i = wgetch(messagewindow);
+    if( !(i == 'y' || i == 'Y') ) {
+      error_message("File",filename,"not written.");
+      return 0;
+    }
+  }
+
   fp = fopen(filename, "w");
   if( fp == 0 ) {
     return 1;
@@ -71,6 +100,7 @@ int writestate(char *filename) {
     fprintf(fp,"%04i\n", sml->memory[i*10+j]);
   }
 
+  error_message("File",filename,"written");
   fclose(fp);
   return 0;
 }
