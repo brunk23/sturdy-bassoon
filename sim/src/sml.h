@@ -42,15 +42,24 @@ struct machineState {
   int instr;			/* current instruction code */
   int opcode;			/* the opcode itself */
   int operand;			/* the memory address to work on */
+
   int inbuff[MEMSIZE];		/* saves input until we need it */
   int inbuff_start;		/* next number to give program */
   int inbuff_end;		/* last number read from user */
+
   int memory[MEMSIZE];		/* the memory for the machine */
   bool breaktable[MEMSIZE];	/* the places to break */
   opPtr inst_tble[MAXOP];	/* a jump table for opcodes */
   bool running;			/* is the chip running */
   bool stepping;		/* should we stop after each instruction */
   bool debug;			/* dump the state of the machine at exit */
+};
+
+struct io_buffer {
+  int size;
+  int *val;
+  int head;
+  int len;
 };
 
 struct out_buffer {
@@ -64,6 +73,7 @@ extern int out_buffer_max_length;
 extern char userline[];
 extern int buffptr;
 extern struct machineState *sml;
+extern struct io_buffer *inbuff;
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
 extern WINDOW *messagewindow;
@@ -104,9 +114,13 @@ int opcode_store();
 int opcode_read();
 int opcode_write();
 void process(char *);
+
 void output_value(int);
 void resize_out_buffer(int);
 int out_buff_len();
+
+struct io_buffer *new_io_buffer(int);
+
 bool allowedchar(int);
 int token(char *);
 bool endcond(char);

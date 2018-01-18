@@ -5,6 +5,7 @@
 #include "sml.h"
 
 struct machineState *sml;
+struct io_buffer *inbuff;
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +25,8 @@ int main(int argc, char *argv[])
     fprintf(stderr,"ERROR: No memeory for SML Machine.\n");
     return 1;
   }
+
+  inbuff = new_io_buffer(MEMSIZE);
 
   // If there's an error making the machine, quit.
   if ( (value = init_machine()) ) {
@@ -54,6 +57,11 @@ void cleanup() {
     out_buffer_tail = out_buffer_head;
     out_buffer_head = out_buffer_head->next;
     free(out_buffer_tail);
+  }
+
+  if( inbuff ) {
+    free( inbuff->val );
+    free( inbuff );
   }
 
   if( !isendwin() ) {
@@ -207,4 +215,26 @@ int init_machine() {
     sml->memory[i] = 0;
   }
   return 0;
+}
+
+/*
+ * This will not fail. Program quits instead.
+ */
+struct io_buffer *new_io_buffer(int size) {
+  struct io_buffer *tmp;
+
+  tmp = (struct io_buffer *)malloc(sizeof(struct io_buffer));
+  if( 0 != tmp ) {
+    tmp->val = (int *)malloc(sizeof(int) * size);
+    if( 0 != tmp->val ) {
+      tmp->head = 0;
+      tmp->size = size;
+      tmp->len = 0;
+      return tmp;
+    }
+    free(tmp);
+    tmp = 0;
+  }
+  fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
+  exit(1);
 }
