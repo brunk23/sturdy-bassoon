@@ -1,0 +1,4 @@
+If you extend the opcodes, you need to be sure to include a
+call to update_mem_addr() if your new instruction changes a
+memory location's value. Otherwise, it will not be updated
+in the simulator's display.

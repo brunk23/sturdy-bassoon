@@ -147,7 +147,6 @@ int run_loop() {
       } else {
 	value = sml->inst_tble[sml->opcode]();
 	sml->iptr %= MEMSIZE;
-	update_mem_addr(sml->operand);
       }
       if( sml->stepping || sml->breaktable[sml->iptr] ) {
 	sml->running = false;

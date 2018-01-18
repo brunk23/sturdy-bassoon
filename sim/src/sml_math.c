@@ -64,6 +64,7 @@ int opcode_inc() {
   if(sml->memory[sml->operand] > MAXVAL) {
     sml->memory[sml->operand] %= (MAXOP * OPFACT);
   }
+  update_mem_addr(sml->operand);
   return 0;
 }
 
@@ -73,5 +74,6 @@ int opcode_dec() {
   if(sml->memory[sml->operand] < MINVAL) {
     sml->memory[sml->operand] %= (MAXOP * OPFACT);
   }
+  update_mem_addr(sml->operand);
   return 0;
 }

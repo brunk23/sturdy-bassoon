@@ -11,6 +11,7 @@ int opcode_load() {
 int opcode_store() {
   sml->iptr++;
   sml->memory[sml->operand] = sml->acc;
+  update_mem_addr(sml->operand);
   return 0;
 }
 
@@ -24,6 +25,7 @@ int opcode_read() {
   sml->inbuff_start++;
   sml->inbuff_start %= MEMSIZE;
   sml->iptr++;
+  update_mem_addr(sml->operand);
   return 0;
 }
 
