@@ -120,6 +120,7 @@ void resize_out_buffer(int);
 int out_buff_len();
 
 struct io_buffer *new_io_buffer(int);
+void resize_io_buffer(struct io_buffer *, int);
 
 bool allowedchar(int);
 int token(char *);

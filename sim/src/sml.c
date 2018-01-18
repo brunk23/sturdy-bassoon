@@ -238,3 +238,37 @@ struct io_buffer *new_io_buffer(int size) {
   fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
   exit(1);
 }
+
+/*
+ * Resize the buffer, if needed.
+ * Create a new array for the buffer
+ * Copy the old values into the new buffer, restarting at 0.
+ * Make sure the new length is correct.
+ * free the old buffer
+ * save the pointer into the structure.
+ */
+void resize_io_buffer(struct io_buffer *old, int size) {
+  int *tmp;
+  int i;
+
+  if( size == old->size ) {
+    return;
+  }
+
+  tmp = (int *)malloc(sizeof(int) * size);
+
+  if( 0 == tmp ) {
+    fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
+    exit(1);
+  }
+
+  for( i = 0; (i < old->len) && (i < size) ; i++ ) {
+    tmp[i] = old->val[ (old->head + i) % old->size ];
+  }
+
+  old->head = 0;
+  old->len = i;
+
+  free(old->val);
+  old->val = tmp;
+}
