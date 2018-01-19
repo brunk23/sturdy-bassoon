@@ -30,6 +30,7 @@ void term_resize() {
     exit(1);
   }
 
+  resize_io_buffer(outbuff, height - 2);
   chipwindow = newwin(4, width-10, 0, 0);
   messagewindow = newwin(5, width-10, 4, 0);
   memwindow = newwin(13, width-10, 9, 0);
@@ -52,11 +53,6 @@ void term_resize() {
   error_message(0,0,0);
 }
 
-void sig_int(int in) {
-  sml->running = false;
-  displaychip();
-}
-
 int init_windows() {
   int height, width;
 
@@ -64,7 +60,7 @@ int init_windows() {
   refresh();
 
   getmaxyx(stdscr, height, width);
-  resize_out_buffer(height - 2);
+  outbuff = new_io_buffer(height - 2);
 
   if( height < MINHEIGHT || width < MINWIDTH ) {
     endwin();
@@ -121,16 +117,15 @@ void updatescreen() {
 }
 
 void displayoutput() {
-  int i = 1;
-  struct out_buffer *tmp = out_buffer_head;
+  int i, head, size;
+  head = outbuff->head;
+  size = outbuff->size;
 
   werase(outputwindow);
   wborder(outputwindow, 0, 0, 0, 0, 0, 0, 0, 0);
   mvwaddstr(outputwindow, 0, (getmaxx(outputwindow)-6)/2, "OUTPUT");
-  while(tmp) {
-    mvwprintw(outputwindow, i, 2, "%4i", tmp->value);
-    tmp = tmp->next;
-    i++;
+  for( i = 0; i < outbuff->len; i++ ) {
+    mvwprintw(outputwindow, i+1, 2, "%4i", outbuff->val[(head + i) % size]);
   }
   wnoutrefresh(outputwindow);
 }

@@ -6,14 +6,12 @@
 
 struct machineState *sml;
 struct io_buffer *inbuff;
+struct io_buffer *outbuff;
 
 int main(int argc, char *argv[])
 {
-  int value = 0, i;
+  int i;
 
-  out_buffer_head = 0;
-  out_buffer_tail = 0;
-  out_buffer_max_length = 0;
   buffptr = 0;
 
   for( i = 0; i < BUFFSIZE+1; i++) {
@@ -26,12 +24,13 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  outbuff = 0;			/* Set by init_windows */
   inbuff = new_io_buffer(MEMSIZE);
 
   // If there's an error making the machine, quit.
-  if ( (value = init_machine()) ) {
+  if ( init_machine() ) {
     fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
-    return value;
+    return 1;
   }
 
   init_windows();
@@ -46,17 +45,13 @@ int main(int argc, char *argv[])
 
   run_loop();
 
-  return value;
+  return 0;
 }
 
 void cleanup() {
-  /*
-   * Properly free the resources we allocated
-   */
-  while(out_buffer_head) {
-    out_buffer_tail = out_buffer_head;
-    out_buffer_head = out_buffer_head->next;
-    free(out_buffer_tail);
+  if( outbuff ) {
+    free( outbuff->val );
+    free( outbuff );
   }
 
   if( inbuff ) {
@@ -87,7 +82,6 @@ void cleanup() {
  * breakpoints.
  */
 int run_loop() {
-  unsigned int value;
   int key, i;
   bool update = true;
 
@@ -153,7 +147,7 @@ int run_loop() {
       if(sml->opcode < 0 || sml->opcode >= OPFACT) {
 	opcode_invalid();
       } else {
-	value = sml->inst_tble[sml->opcode]();
+	sml->inst_tble[sml->opcode]();
 	sml->iptr %= MEMSIZE;
       }
       if( sml->stepping || sml->breaktable[sml->iptr] ) {
@@ -162,7 +156,7 @@ int run_loop() {
       }
     }
   }
-  return value;
+  return 0;
 }
 
 int init_machine() {
@@ -207,68 +201,9 @@ int init_machine() {
   sml->running = false;
   sml->stepping = false;
   sml->debug = false;
-  sml->inbuff_start = 0;
-  sml->inbuff_end = 0;
   for(i = 0; i < MEMSIZE; ++i) {
-    sml->inbuff[i] = 0;
     sml->breaktable[i] = false;
     sml->memory[i] = 0;
   }
   return 0;
-}
-
-/*
- * This will not fail. Program quits instead.
- */
-struct io_buffer *new_io_buffer(int size) {
-  struct io_buffer *tmp;
-
-  tmp = (struct io_buffer *)malloc(sizeof(struct io_buffer));
-  if( 0 != tmp ) {
-    tmp->val = (int *)malloc(sizeof(int) * size);
-    if( 0 != tmp->val ) {
-      tmp->head = 0;
-      tmp->size = size;
-      tmp->len = 0;
-      return tmp;
-    }
-    free(tmp);
-    tmp = 0;
-  }
-  fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
-  exit(1);
-}
-
-/*
- * Resize the buffer, if needed.
- * Create a new array for the buffer
- * Copy the old values into the new buffer, restarting at 0.
- * Make sure the new length is correct.
- * free the old buffer
- * save the pointer into the structure.
- */
-void resize_io_buffer(struct io_buffer *old, int size) {
-  int *tmp;
-  int i;
-
-  if( size == old->size ) {
-    return;
-  }
-
-  tmp = (int *)malloc(sizeof(int) * size);
-
-  if( 0 == tmp ) {
-    fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
-    exit(1);
-  }
-
-  for( i = 0; (i < old->len) && (i < size) ; i++ ) {
-    tmp[i] = old->val[ (old->head + i) % old->size ];
-  }
-
-  old->head = 0;
-  old->len = i;
-
-  free(old->val);
-  old->val = tmp;
 }

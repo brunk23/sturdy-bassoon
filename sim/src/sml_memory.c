@@ -18,19 +18,18 @@ int opcode_store() {
 // simple operation
 int opcode_read() {
   /* There is no input at this time */
-  if( sml->inbuff_start == sml->inbuff_end ) {
+  if( size_io_buffer(inbuff) == 0 ) {
     return 0;
   }
-  sml->memory[sml->operand] = sml->inbuff[sml->inbuff_start];
-  sml->inbuff_start++;
-  sml->inbuff_start %= MEMSIZE;
+  sml->memory[sml->operand] = remove_io_value(inbuff);
   sml->iptr++;
   update_mem_addr(sml->operand);
   return 0;
 }
 
 int opcode_write() {
-  output_value(sml->memory[sml->operand]);
+  add_io_value(outbuff, sml->memory[sml->operand]);
+  displayoutput();
   sml->iptr++;
   return 0;
 }

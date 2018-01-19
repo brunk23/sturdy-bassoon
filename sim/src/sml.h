@@ -3,7 +3,7 @@
 
 #include <ncurses.h>
 
-#define VERSION "1.03"
+#define VERSION "1.04"
 #define MINWIDTH 80
 #define MINHEIGHT 24
 #define INVALID -1
@@ -42,11 +42,6 @@ struct machineState {
   int instr;			/* current instruction code */
   int opcode;			/* the opcode itself */
   int operand;			/* the memory address to work on */
-
-  int inbuff[MEMSIZE];		/* saves input until we need it */
-  int inbuff_start;		/* next number to give program */
-  int inbuff_end;		/* last number read from user */
-
   int memory[MEMSIZE];		/* the memory for the machine */
   bool breaktable[MEMSIZE];	/* the places to break */
   opPtr inst_tble[MAXOP];	/* a jump table for opcodes */
@@ -62,18 +57,11 @@ struct io_buffer {
   int len;
 };
 
-struct out_buffer {
-  int value;
-  struct out_buffer *next;
-};
-
-extern struct out_buffer *out_buffer_head;
-extern struct out_buffer *out_buffer_tail;
-extern int out_buffer_max_length;
 extern char userline[];
 extern int buffptr;
 extern struct machineState *sml;
 extern struct io_buffer *inbuff;
+extern struct io_buffer *outbuff;
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
 extern WINDOW *messagewindow;
@@ -82,7 +70,6 @@ extern WINDOW *outputwindow;
 
 // Function Defintions
 int init_machine();
-int memory_dump();
 void error_message(char *, char *, char *);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int);
@@ -115,12 +102,12 @@ int opcode_read();
 int opcode_write();
 void process(char *);
 
-void output_value(int);
-void resize_out_buffer(int);
-int out_buff_len();
-
 struct io_buffer *new_io_buffer(int);
 void resize_io_buffer(struct io_buffer *, int);
+int size_io_buffer(struct io_buffer *);
+void add_io_value(struct io_buffer *, int);
+int remove_io_value(struct io_buffer *);
+int memory_dump();
 
 bool allowedchar(int);
 int token(char *);

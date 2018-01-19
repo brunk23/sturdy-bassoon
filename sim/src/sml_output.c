@@ -3,84 +3,90 @@
 
 #include "sml.h"
 
-struct out_buffer *out_buffer_head;
-struct out_buffer *out_buffer_tail;
-int out_buffer_max_length;
-
 /*
- * As items come in, they are added to the tail.
- * If if list is larger than the max length, throw out
- * first value.
- * exit if malloc fails.
+ * This will not fail. Program quits instead.
  */
-void output_value(int value) {
-  int curr_length;
-  struct out_buffer *tmp;
+struct io_buffer *new_io_buffer(int size) {
+  struct io_buffer *tmp;
 
-  if( out_buffer_max_length == 0 ) {
-    endwin();
-    fprintf(stderr, "FATAL ERROR: There's no lines for output.\n");
-    exit(1);
-  }
-
-  curr_length = out_buff_len();
-  if( curr_length == out_buffer_max_length ) {
-    tmp = out_buffer_head;
-    out_buffer_head = out_buffer_head->next;
-    free(tmp);
-  }
-
-  if( 0 == (tmp = (struct out_buffer *)malloc(sizeof(struct out_buffer)))) {
-    endwin();
-    fprintf(stderr, "FATAL ERROR: Unable to get memory for output.\n");
-    exit(1);
-  }
-
-  tmp->value = value;
-  tmp->next = 0;
-
-  if( out_buffer_head == 0 ) {
-    out_buffer_head = tmp;
-    out_buffer_tail = tmp;
-  } else {
-    out_buffer_tail->next = tmp;
-    out_buffer_tail = tmp;
-  }
-
-  displayoutput();
-}
-
-/*
- * This is only called when the program starts and on
- * resize events
- */
-void resize_out_buffer(int max) {
-  int i, curr_length = 0;
-  struct out_buffer *tmp;
-
-  curr_length = out_buff_len();
-  out_buffer_max_length = max;
-
-  if( curr_length > max ) {
-    for(i = 0; i < (curr_length - max); i++) {
-      tmp = out_buffer_head;
-      out_buffer_head = out_buffer_head->next;
-      free(tmp);
+  tmp = (struct io_buffer *)malloc(sizeof(struct io_buffer));
+  if( 0 != tmp ) {
+    tmp->val = (int *)malloc(sizeof(int) * size);
+    if( 0 != tmp->val ) {
+      tmp->head = 0;
+      tmp->size = size;
+      tmp->len = 0;
+      return tmp;
     }
+    free(tmp);
+    tmp = 0;
   }
-  displayoutput();
+  fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
+  exit(1);
 }
 
-int out_buff_len() {
-  int curr_length = 0;
-  struct out_buffer *tmp = out_buffer_head;
+/*
+ * Resize the buffer, if needed.
+ * Create a new array for the buffer
+ * Copy the old values into the new buffer, restarting at 0.
+ * Make sure the new length is correct.
+ * free the old buffer
+ * save the pointer into the structure.
+ */
+void resize_io_buffer(struct io_buffer *old, int size) {
+  int *tmp;
+  int i;
 
-  while(tmp) {
-    curr_length++;
-    tmp = tmp->next;
+  if( size == old->size ) {
+    return;
   }
 
-  return curr_length;
+  tmp = (int *)malloc(sizeof(int) * size);
+
+  if( old->len > size ) {
+    old->head += (old->len - size);
+    old->head %= old->size;
+  }
+
+  if( 0 == tmp ) {
+    fprintf(stderr,"ERROR: Could not create i/o buffer.\n");
+    exit(1);
+  }
+
+  for( i = 0; (i < old->len) && (i < size) ; i++ ) {
+    tmp[i] = old->val[ (old->head + i) % old->size ];
+  }
+
+  old->head = 0;
+  old->len = i;
+  old->size = size;
+
+  free(old->val);
+  old->val = tmp;
+}
+
+int remove_io_value(struct io_buffer *buff) {
+  int x;
+  x = buff->val[buff->head];
+  buff->head++;
+  buff->head %= buff->size;
+  buff->len--;
+  return x;
+}
+
+void add_io_value(struct io_buffer *buff, int x) {
+  if( buff->len == buff->size ) {
+    buff->val[buff->head] = x;
+    buff->head++;
+    buff->head %= buff->size;
+  } else {
+    buff->val[(buff->head + buff->len) % buff->size] = x;
+    buff->len++;
+  }
+}
+
+int size_io_buffer(struct io_buffer *buff) {
+  return buff->len;
 }
 
 int memory_dump()

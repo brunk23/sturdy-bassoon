@@ -73,9 +73,7 @@ void process(char *line) {
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	  } else {
-	    sml->inbuff[sml->inbuff_end] = value;
-	    sml->inbuff_end++;
-	    sml->inbuff_end %= MEMSIZE;
+	    add_io_value(inbuff, value);
 	  }
 	} else {
 	  error_message("Number out of range:","Ignoring",line);
@@ -416,13 +414,8 @@ int token(char *str) {
     return val;
   }
   if( strcmp(str, "wipe") == 0 ) {
-    while(out_buffer_head) {
-      out_buffer_tail = out_buffer_head;
-      out_buffer_head = out_buffer_head->next;
-      free(out_buffer_tail);
-    }
-    out_buffer_head = 0;
-    out_buffer_tail = 0;
+    outbuff->head = 0;
+    outbuff->len = 0;
     displayoutput();
     return val;
   }

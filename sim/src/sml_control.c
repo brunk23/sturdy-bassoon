@@ -4,6 +4,11 @@
 
 #include "sml.h"
 
+void sig_int(int in) {
+  sml->running = false;
+  displaychip();
+}
+
 // branch operation
 int opcode_branch() {
   // Just change the iptr, we're going to a different spot.
