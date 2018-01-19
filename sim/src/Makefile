@@ -7,7 +7,7 @@ sml: $(SIMC) $(SIMH)
 	gcc -g -Wall -lncurses -o SML $(SIMC)
 
 profile: $(SIMC) $(SIMH)
-	gcc -g -pg -no-pie -Wall -O2 -lncurses -o SML $(SIMC)
+	gcc -g -pg -no-pie -Wall -lncurses -o SML $(SIMC)
 
 release: $(SIMC) $(SIMH)
 	gcc -Wall -lncurses -O2 -o SML $(SIMC)

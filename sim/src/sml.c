@@ -71,6 +71,7 @@ void cleanup() {
     }
   }
 
+  fprintf(stderr,"%i was DUMPSTATE\n",DUMPSTATE);
   if( sml ) {
     free(sml);
   }
