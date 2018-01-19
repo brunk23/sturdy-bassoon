@@ -10,7 +10,7 @@ profile: $(SIMC) $(SIMH)
 	gcc -g -pg -no-pie -Wall -lncurses -o SML $(SIMC)
 
 release: $(SIMC) $(SIMH)
-	gcc -Wall -lncurses -O2 -o SML $(SIMC)
+	gcc -Wall -lncurses -O3 -o SML $(SIMC)
 
 clean:
 	rm *.o
