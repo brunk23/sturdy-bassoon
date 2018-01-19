@@ -453,14 +453,14 @@ bool allowedchar(int a) {
   return false;
 }
 
-bool endcond(char a) {
+inline bool endcond(char a) {
   if( a == ' ' || a == '\t' || endstr(a) ) {
     return true;
   }
   return false;
 }
 
-bool endstr(char a) {
+inline bool endstr(char a) {
   if( a == '#' || a == 0 ) {
     return true;
   }

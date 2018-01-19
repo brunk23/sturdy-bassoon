@@ -85,7 +85,7 @@ void add_io_value(struct io_buffer *buff, int x) {
   }
 }
 
-int size_io_buffer(struct io_buffer *buff) {
+inline int size_io_buffer(struct io_buffer *buff) {
   return buff->len;
 }
 
