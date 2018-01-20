@@ -19,6 +19,7 @@ int opcode_store() {
 int opcode_read() {
   /* There is no input at this time */
   if( size_io_buffer(inbuff) == 0 ) {
+    profile_unlog(profile_data);
     return 0;
   }
   sml->memory[sml->operand] = remove_io_value(inbuff);

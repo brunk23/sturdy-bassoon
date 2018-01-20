@@ -2,28 +2,26 @@ Extending the Opcodes -- Basic Steps
 
 1) Add a word to the enum in sml.h
 2) Declare a function of type int opcode_{newname}()
-3) The above function should handle changing the instruction
-   pointer at the end of operation. It does not need to ensure
-   that the value is within memory.
-4) If you change the value of memory or the accumulator, you
-   are responsible for ensuring that it is within the range of
-   MINVAL and MAXVAL.
-5) If you change the value of memory, you should include a call
-   to update_mem_add(), otherwise the change won't be updated
-   in the simulator's display.
-6) Upon successful operation, the instruction should return 0.
-   The return codes are not checked. They exist for future
-   use, if needed. Comply with the standard, to make future use
-   easier.
-7) In init_machine() (sml.c), add the function to the inst_table
-   array. Use the existing format and use the instruction word
-   you added to the enum for the index. That way changes to the
-   value of the opcode only need to be changed in sml.h.
-8) In token(char *) (sml_input.c), add the string you wish to
-   assemble to your new opcode. Return the word from the enum.
-9) In displaychip() (sml_display.c), add the string you wish to
-   print when this code is seen while running. Usually, this is
-   the same string as you used in #8.
-10) You may have to change process(char *) (sml_input.c), if your
-   opcode does not take a single memory address as its only
-   argument.
+3) The above function should handle changing the instruction pointer at the end
+   of operation. It does not need to ensure that the value is within memory.
+4) If you change the value of memory or the accumulator, you are responsible
+   for ensuring that it is within the range of MINVAL and MAXVAL.
+5) If you change the value of memory, you should include a call to
+   update_mem_add(), otherwise the change won't be updated in the simulator's
+   display.
+6) Upon successful operation, the instruction should return 0.  The return
+   codes are not checked. They exist for future use, if needed. Comply with the
+   standard, to make future use easier.
+7) In init_machine() (sml.c), add the function to the inst_table array. Use the
+   existing format and use the instruction word you added to the enum for the
+   index. That way changes to the value of the opcode only need to be changed
+   in sml.h.
+8) In token(char *) (sml_input.c), add the string you wish to assemble to your
+   new opcode. Return the word from the enum.
+9) In instruction_string() (sml_display.c), add the string you wish to print
+   when this code is seen while running. Usually, this is the same string as
+   you used in #8.
+10) You may have to change process(char *) (sml_input.c), if your opcode does
+   not take a single memory address as its only argument.
+11) If the new instruction does not operate with a memory address, you will
+   need to modify the way profile_log is called, and works.

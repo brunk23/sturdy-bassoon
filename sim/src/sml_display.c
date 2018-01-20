@@ -166,7 +166,7 @@ inline void update_mem_addr(int i) {
 }
 
 void displaychip() {
-  char *n = "DATA";
+  char *n = 0;
   mvwprintw(chipwindow, 1, 1, "instPtr: %02i", sml->iptr);
   if(sml->acc >= 0 ) {
     mvwprintw(chipwindow, 1, 20, "Accumulator: +%04i", sml->acc);
@@ -178,7 +178,34 @@ void displaychip() {
   } else {
     mvwprintw(chipwindow, 1, 40, "{HALTED} type CTRL-G to run");
   }
-  switch( sml->memory[ sml->iptr ] / OPFACT ) {
+  n = instruction_string( sml->memory[ sml->iptr ] / OPFACT );
+  if( n != 0 ) {
+    mvwprintw(chipwindow, 2, 1, "Instruction: %s %02i",
+	      n, sml->memory[sml->iptr] % OPFACT);
+  } else {
+    mvwprintw(chipwindow,2,1, "Instruction: DATA %04i",sml->memory[sml->iptr]);
+  }
+}
+
+void error_message(char *line1, char *line2, char *line3) {
+  werase(messagewindow);
+  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
+  mvwaddstr(messagewindow, 0, (getmaxx(messagewindow)-8)/2, "MESSAGES");
+  if( line1 ) {
+    mvwaddstr(messagewindow, 1, 2, line1);
+  }
+  if( line2 ) {
+    mvwaddstr(messagewindow, 2, 2, line2);
+  }
+  if( line3 ) {
+    mvwaddstr(messagewindow, 3, 2, line3);
+  }
+  wnoutrefresh(messagewindow);
+}
+
+char *instruction_string(int x) {
+  char *n = 0;
+  switch(x) {
   case READ:
     n = "read";
     break;
@@ -225,28 +252,8 @@ void displaychip() {
     n = "halt";
     break;
   default:
-    mvwprintw(chipwindow,2,1, "Instruction: %s %04i",n,sml->memory[sml->iptr]);
     n = 0;
     break;
   }
-  if( n != 0 ) {
-    mvwprintw(chipwindow, 2, 1, "Instruction: %s %02i",
-	      n, sml->memory[sml->iptr] % OPFACT);
-  }
-}
-
-void error_message(char *line1, char *line2, char *line3) {
-  werase(messagewindow);
-  wborder(messagewindow, 0, 0, 0, 0, 0, 0, 0, 0);
-  mvwaddstr(messagewindow, 0, (getmaxx(messagewindow)-8)/2, "MESSAGES");
-  if( line1 ) {
-    mvwaddstr(messagewindow, 1, 2, line1);
-  }
-  if( line2 ) {
-    mvwaddstr(messagewindow, 2, 2, line2);
-  }
-  if( line3 ) {
-    mvwaddstr(messagewindow, 3, 2, line3);
-  }
-  wnoutrefresh(messagewindow);
+  return n;
 }

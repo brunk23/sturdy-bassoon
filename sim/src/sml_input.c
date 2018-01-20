@@ -113,6 +113,7 @@ void process(char *line) {
 	  case DUMPMEM:
 	  case DUMPSTATE:
 	  case RESTOREMEM:
+	  case DUMPPROFILE:
 	    state = FILEIOHELP;
 	    break;
 	  default:
@@ -170,6 +171,11 @@ void process(char *line) {
 	    break;
 	  case DUMPSTATE:
 	    if( !(writestate(str) == 0) ) {
+	      error_message("Unable to save state to file",line,0);
+	    }
+	    break;
+	  case DUMPPROFILE:
+	    if( !(writeprofile(str, profile_data) == 0) ) {
 	      error_message("Unable to save state to file",line,0);
 	    }
 	    break;
@@ -402,6 +408,21 @@ int token(char *str) {
   }
   if( strcmp(str, "set") == 0 ) {
     return SET;
+  }
+  if( strcmp(str, "dumpprofile") == 0 ) {
+    return DUMPPROFILE;
+  }
+  if( strcmp(str, "profile") == 0 ) {
+    start_profiling(profile_data);
+    return val;
+  }
+  if( strcmp(str, "noprofile") == 0 ) {
+    stop_profiling(profile_data);
+    return val;
+  }
+  if( strcmp(str, "resetprofile") == 0 ) {
+    reset_profiling(profile_data);
+    return val;
   }
   if( strcmp(str, "reset") == 0 ) {
     init_machine();

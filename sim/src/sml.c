@@ -7,6 +7,7 @@
 struct machineState *sml;
 struct io_buffer *inbuff;
 struct io_buffer *outbuff;
+struct profile *profile_data;
 
 int main(int argc, char *argv[])
 {
@@ -19,8 +20,9 @@ int main(int argc, char *argv[])
   }
 
   sml = (struct machineState *)malloc(sizeof(struct machineState));
-  if( 0 == sml ) {
-    fprintf(stderr,"ERROR: No memeory for SML Machine.\n");
+  profile_data = (struct profile *)malloc(sizeof(struct profile));
+  if( 0 == sml || 0 == profile_data ) {
+    fprintf(stderr,"ERROR: No memory for Simulator to start.\n");
     return 1;
   }
 
@@ -38,7 +40,8 @@ int main(int argc, char *argv[])
   displaymem();
   displayoutput();
   error_message(0,0,0);
-
+  reset_profiling(profile_data);
+  stop_profiling(profile_data);
 
   signal(SIGINT, sig_int);
   atexit(cleanup);
@@ -69,6 +72,10 @@ void cleanup() {
       // or we request it
       memory_dump();
     }
+  }
+
+  if( profile_data ) {
+    free( profile_data );
   }
 
   if( sml ) {
@@ -147,6 +154,9 @@ int run_loop() {
       if(sml->opcode < 0 || sml->opcode >= OPFACT) {
 	opcode_invalid();
       } else {
+	if( profile_data->active ) {
+	  profile_log(profile_data);
+	}
 	sml->inst_tble[sml->opcode]();
 	sml->iptr %= MEMSIZE;
       }

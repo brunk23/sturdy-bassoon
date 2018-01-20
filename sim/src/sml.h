@@ -3,7 +3,7 @@
 
 #include <ncurses.h>
 
-#define VERSION "1.04"
+#define VERSION "1.10"
 #define MINWIDTH 80
 #define MINHEIGHT 24
 #define BUFFSIZE 80
@@ -30,7 +30,7 @@ enum OPCODES {
 enum PROCESS_STATES {
   BLANK = 10000, NUMBER, ALPHA, ADDRESS,
   ASSEMBLE, ASSEMBLEHELP,
-  FILEIO, FILEIOHELP,
+  FILEIO, FILEIOHELP, DUMPPROFILE,
   STEP, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
   DUMPMEM, DUMPSTATE, RESTOREMEM, INVALID
 };
@@ -56,11 +56,19 @@ struct io_buffer {
   int len;
 };
 
+struct profile {
+  long heatmap[MEMSIZE];
+  long memmap[MEMSIZE];
+  long instmap[MAXOP];
+  bool active;
+};
+
 extern char userline[];
 extern int buffptr;
 extern struct machineState *sml;
 extern struct io_buffer *inbuff;
 extern struct io_buffer *outbuff;
+extern struct profile *profile_data;
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
 extern WINDOW *messagewindow;
@@ -82,6 +90,7 @@ void displayoutput();
 void term_resize();
 void sig_int(int);
 void updatescreen();
+
 int opcode_branch();
 int opcode_branch_neg();
 int opcode_branch_zero();
@@ -99,7 +108,16 @@ int opcode_load();
 int opcode_store();
 int opcode_read();
 int opcode_write();
+
 void process(char *);
+char *instruction_string(int);
+
+void stop_profiling(struct profile *);
+void start_profiling(struct profile *);
+void reset_profiling(struct profile *);
+void profile_log(struct profile *);
+void profile_unlog(struct profile *);
+int writeprofile(char *, struct profile *);
 
 struct io_buffer *new_io_buffer(int);
 void resize_io_buffer(struct io_buffer *, int);
