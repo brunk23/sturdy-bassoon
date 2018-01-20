@@ -34,7 +34,7 @@ int opcode_write() {
   return 0;
 }
 
-bool is_valid_address(int address) {
+inline bool is_valid_address(int address) {
   return !(out_of_bounds(address, 0, MEMSIZE - 1));
 }
 
@@ -42,6 +42,6 @@ bool is_valid_address(int address) {
  * Determine if a certain value is out of range. Useful for determining
  * memory validity and other functions.
  */
-bool out_of_bounds(int value, int min, int max) {
+inline bool out_of_bounds(int value, int min, int max) {
   return ( (value > max) || (value < min) );
 }

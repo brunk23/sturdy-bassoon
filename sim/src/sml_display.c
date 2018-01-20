@@ -156,7 +156,7 @@ void displaymem() {
 /*
  * This will just display the memory address that has changed
  */
-void update_mem_addr(int i) {
+inline void update_mem_addr(int i) {
   if(sml->memory[i] >= 0 ) {
     mvwprintw(memwindow, i / 10 + 2, (i%10)*7+6, "+%04i",sml->memory[i]);
   } else {
