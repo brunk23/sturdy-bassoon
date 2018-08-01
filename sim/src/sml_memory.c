@@ -11,29 +11,31 @@ int opcode_load() {
 int opcode_store() {
   sml->iptr++;
   sml->memory[sml->operand] = sml->acc;
+  update_mem_addr(sml->operand);
   return 0;
 }
 
 // simple operation
 int opcode_read() {
   /* There is no input at this time */
-  if( sml->inbuff_start == sml->inbuff_end ) {
+  if( size_io_buffer(inbuff) == 0 ) {
+    profile_unlog(profile_data);
     return 0;
   }
-  sml->memory[sml->operand] = sml->inbuff[sml->inbuff_start];
-  sml->inbuff_start++;
-  sml->inbuff_start %= MEMSIZE;
+  sml->memory[sml->operand] = remove_io_value(inbuff);
   sml->iptr++;
+  update_mem_addr(sml->operand);
   return 0;
 }
 
 int opcode_write() {
-  output_value(sml->memory[sml->operand]);
+  add_io_value(outbuff, sml->memory[sml->operand]);
+  displayoutput();
   sml->iptr++;
   return 0;
 }
 
-bool is_valid_address(int address) {
+inline bool is_valid_address(int address) {
   return !(out_of_bounds(address, 0, MEMSIZE - 1));
 }
 
@@ -41,6 +43,6 @@ bool is_valid_address(int address) {
  * Determine if a certain value is out of range. Useful for determining
  * memory validity and other functions.
  */
-bool out_of_bounds(int value, int min, int max) {
+inline bool out_of_bounds(int value, int min, int max) {
   return ( (value > max) || (value < min) );
 }

@@ -69,12 +69,11 @@ void process(char *line) {
 	  }
 	  if( sml->running == false && sml->stepping == false ) {
 	    sml->memory[sml->iptr] = value;
+	    update_mem_addr(sml->iptr);
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	  } else {
-	    sml->inbuff[sml->inbuff_end] = value;
-	    sml->inbuff_end++;
-	    sml->inbuff_end %= MEMSIZE;
+	    add_io_value(inbuff, value);
 	  }
 	} else {
 	  error_message("Number out of range:","Ignoring",line);
@@ -106,6 +105,7 @@ void process(char *line) {
 	  switch( opcode ) {
 	  case HALT:
 	    sml->memory[sml->iptr] = opcode * OPFACT;
+	    update_mem_addr(sml->iptr);
 	    sml->iptr++;
 	    sml->iptr %= MEMSIZE;
 	    state = BLANK;
@@ -113,6 +113,7 @@ void process(char *line) {
 	  case DUMPMEM:
 	  case DUMPSTATE:
 	  case RESTOREMEM:
+	  case DUMPPROFILE:
 	    state = FILEIOHELP;
 	    break;
 	  default:
@@ -170,6 +171,11 @@ void process(char *line) {
 	    break;
 	  case DUMPSTATE:
 	    if( !(writestate(str) == 0) ) {
+	      error_message("Unable to save state to file",line,0);
+	    }
+	    break;
+	  case DUMPPROFILE:
+	    if( !(writeprofile(str, profile_data) == 0) ) {
 	      error_message("Unable to save state to file",line,0);
 	    }
 	    break;
@@ -273,6 +279,7 @@ void process(char *line) {
 	  opcode *= OPFACT;
 	  opcode += value;
 	  sml->memory[sml->iptr] = opcode;
+	  update_mem_addr(sml->iptr);
 	  sml->iptr++;
 	} else {
 	  error_message("Invalid address in assembly command:",line,0);
@@ -402,18 +409,35 @@ int token(char *str) {
   if( strcmp(str, "set") == 0 ) {
     return SET;
   }
+  if( strcmp(str, "dumpprofile") == 0 ) {
+    return DUMPPROFILE;
+  }
+  if( strcmp(str, "profile") == 0 ) {
+    start_profiling(profile_data);
+    return val;
+  }
+  if( strcmp(str, "noprofile") == 0 ) {
+    stop_profiling(profile_data);
+    return val;
+  }
+  if( strcmp(str, "resetprofile") == 0 ) {
+    reset_profiling(profile_data);
+    return val;
+  }
   if( strcmp(str, "reset") == 0 ) {
     init_machine();
+    displaymem();
+    return val;
+  }
+  /* debugging purposes */
+  if( strcmp(str, "displaymem") == 0 ) {
+    displaymem();
     return val;
   }
   if( strcmp(str, "wipe") == 0 ) {
-    while(out_buffer_head) {
-      out_buffer_tail = out_buffer_head;
-      out_buffer_head = out_buffer_head->next;
-      free(out_buffer_tail);
-    }
-    out_buffer_head = 0;
-    out_buffer_tail = 0;
+    outbuff->head = 0;
+    outbuff->len = 0;
+    displayoutput();
     return val;
   }
   error_message("Unrecognized string:",str,0);
@@ -450,14 +474,14 @@ bool allowedchar(int a) {
   return false;
 }
 
-bool endcond(char a) {
+inline bool endcond(char a) {
   if( a == ' ' || a == '\t' || endstr(a) ) {
     return true;
   }
   return false;
 }
 
-bool endstr(char a) {
+inline bool endstr(char a) {
   if( a == '#' || a == 0 ) {
     return true;
   }

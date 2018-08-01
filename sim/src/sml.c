@@ -5,14 +5,14 @@
 #include "sml.h"
 
 struct machineState *sml;
+struct io_buffer *inbuff;
+struct io_buffer *outbuff;
+struct profile *profile_data;
 
 int main(int argc, char *argv[])
 {
-  int value = 0, i;
+  int i;
 
-  out_buffer_head = 0;
-  out_buffer_tail = 0;
-  out_buffer_max_length = 0;
   buffptr = 0;
 
   for( i = 0; i < BUFFSIZE+1; i++) {
@@ -20,38 +20,46 @@ int main(int argc, char *argv[])
   }
 
   sml = (struct machineState *)malloc(sizeof(struct machineState));
-  if( 0 == sml ) {
-    fprintf(stderr,"ERROR: No memeory for SML Machine.\n");
+  profile_data = (struct profile *)malloc(sizeof(struct profile));
+  if( 0 == sml || 0 == profile_data ) {
+    fprintf(stderr,"ERROR: No memory for Simulator to start.\n");
     return 1;
   }
 
+  outbuff = 0;			/* Set by init_windows */
+  inbuff = new_io_buffer(MEMSIZE);
+
   // If there's an error making the machine, quit.
-  if ( (value = init_machine()) ) {
+  if ( init_machine() ) {
     fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
-    return value;
+    return 1;
   }
 
-  initscr();
-  refresh();
   init_windows();
+  updatescreen();
+  displaymem();
+  displayoutput();
+  error_message(0,0,0);
+  reset_profiling(profile_data);
+  stop_profiling(profile_data);
 
-  signal(SIGWINCH, sig_winch);
   signal(SIGINT, sig_int);
   atexit(cleanup);
 
   run_loop();
 
-  return value;
+  return 0;
 }
 
 void cleanup() {
-  /*
-   * Properly free the resources we allocated
-   */
-  while(out_buffer_head) {
-    out_buffer_tail = out_buffer_head;
-    out_buffer_head = out_buffer_head->next;
-    free(out_buffer_tail);
+  if( outbuff ) {
+    free( outbuff->val );
+    free( outbuff );
+  }
+
+  if( inbuff ) {
+    free( inbuff->val );
+    free( inbuff );
   }
 
   if( !isendwin() ) {
@@ -66,6 +74,10 @@ void cleanup() {
     }
   }
 
+  if( profile_data ) {
+    free( profile_data );
+  }
+
   if( sml ) {
     free(sml);
   }
@@ -77,21 +89,26 @@ void cleanup() {
  * breakpoints.
  */
 int run_loop() {
-  unsigned int value;
   int key, i;
   bool update = true;
 
   sml->iptr = 0;
   sml->running = false;
   while ( true ) {
-    if( update) {
+    if( update ) {
       updatescreen();
     }
+    doupdate();
     update = false;
 
-    key = getch();
+    key = mvwgetch(inputwindow, 1, 1);
     if( key != ERR ) {
       update = true;
+      if( key == KEY_RESIZE ) {
+	term_resize();
+	continue;
+      }
+
       if( key == '\n' ) {
 	process(userline);
 	for( i = 0; i < BUFFSIZE; i++ ) {
@@ -129,11 +146,6 @@ int run_loop() {
       }
     }
 
-    if(sml->iptr == MEMSIZE) {
-      error_message(0,"IPTR OVERRAN MEMORY",0);
-      value = 1;		// magic number again
-      break;
-    }
     if( sml->running ) {
       update = true;
       sml->instr = sml->memory[sml->iptr];
@@ -142,18 +154,22 @@ int run_loop() {
       if(sml->opcode < 0 || sml->opcode >= OPFACT) {
 	opcode_invalid();
       } else {
-	value = sml->inst_tble[sml->opcode]();
+	if( profile_data->active ) {
+	  profile_log(profile_data);
+	}
+	sml->inst_tble[sml->opcode]();
+	sml->iptr %= MEMSIZE;
       }
       if( sml->stepping || sml->breaktable[sml->iptr] ) {
 	sml->running = false;
+	sml->stepping = false;
       }
     }
   }
-  return value;
+  return 0;
 }
 
-int init_machine()
-{
+int init_machine() {
   int i;
   // Unsupported OPCODES crash the machine.
   for(i = 0; i < MAXOP; ++i) {
@@ -195,10 +211,7 @@ int init_machine()
   sml->running = false;
   sml->stepping = false;
   sml->debug = false;
-  sml->inbuff_start = 0;
-  sml->inbuff_end = 0;
   for(i = 0; i < MEMSIZE; ++i) {
-    sml->inbuff[i] = 0;
     sml->breaktable[i] = false;
     sml->memory[i] = 0;
   }

@@ -3,8 +3,14 @@
 SIMC = *.c
 SIMH = *.h
 
-sml_sim: $(SIMC) $(SIMH)
-	gcc -g -Wall -O2 -lncurses -o SML $(SIMC)
+sml: $(SIMC) $(SIMH)
+	gcc -g -Wall -Winline -o SML $(SIMC) -lncurses 
+
+profile: $(SIMC) $(SIMH)
+	gcc -g -pg -no-pie -Wall -O -Winline -o SML $(SIMC) -lncurses 
+
+release: $(SIMC) $(SIMH)
+	gcc -Wall -O3 -Winline -o SML $(SIMC) -lncurses 
 
 clean:
 	rm *.o

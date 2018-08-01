@@ -3,9 +3,9 @@
 
 #include <ncurses.h>
 
-#define MINWIDTH 85
-#define MINHEIGHT 25
-#define INVALID -1
+#define VERSION "1.10"
+#define MINWIDTH 80
+#define MINHEIGHT 24
 #define BUFFSIZE 80
 #define MEMSIZE 100
 #define MAXOP 100
@@ -28,11 +28,11 @@ enum OPCODES {
 };
 
 enum PROCESS_STATES {
-  BLANK, NUMBER, ALPHA, ADDRESS,
+  BLANK = 10000, NUMBER, ALPHA, ADDRESS,
   ASSEMBLE, ASSEMBLEHELP,
-  FILEIO, FILEIOHELP,
-  STEP=MAXOP+1, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
-  DUMPMEM, DUMPSTATE, RESTOREMEM
+  FILEIO, FILEIOHELP, DUMPPROFILE,
+  STEP, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
+  DUMPMEM, DUMPSTATE, RESTOREMEM, INVALID
 };
 
 struct machineState {
@@ -41,9 +41,6 @@ struct machineState {
   int instr;			/* current instruction code */
   int opcode;			/* the opcode itself */
   int operand;			/* the memory address to work on */
-  int inbuff[MEMSIZE];		/* saves input until we need it */
-  int inbuff_start;		/* next number to give program */
-  int inbuff_end;		/* last number read from user */
   int memory[MEMSIZE];		/* the memory for the machine */
   bool breaktable[MEMSIZE];	/* the places to break */
   opPtr inst_tble[MAXOP];	/* a jump table for opcodes */
@@ -52,17 +49,26 @@ struct machineState {
   bool debug;			/* dump the state of the machine at exit */
 };
 
-struct out_buffer {
-  int value;
-  struct out_buffer *next;
+struct io_buffer {
+  int size;
+  int *val;
+  int head;
+  int len;
 };
 
-extern struct out_buffer *out_buffer_head;
-extern struct out_buffer *out_buffer_tail;
-extern int out_buffer_max_length;
+struct profile {
+  long heatmap[MEMSIZE];
+  long memmap[MEMSIZE];
+  long instmap[MAXOP];
+  bool active;
+};
+
 extern char userline[];
 extern int buffptr;
 extern struct machineState *sml;
+extern struct io_buffer *inbuff;
+extern struct io_buffer *outbuff;
+extern struct profile *profile_data;
 extern WINDOW *memwindow;
 extern WINDOW *chipwindow;
 extern WINDOW *messagewindow;
@@ -71,7 +77,6 @@ extern WINDOW *outputwindow;
 
 // Function Defintions
 int init_machine();
-int memory_dump();
 void error_message(char *, char *, char *);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int);
@@ -79,11 +84,13 @@ int run_loop();
 void cleanup();
 int init_windows();
 void displaymem();
+void update_mem_addr(int);
 void displaychip();
 void displayoutput();
-void sig_winch(int);
+void term_resize();
 void sig_int(int);
 void updatescreen();
+
 int opcode_branch();
 int opcode_branch_neg();
 int opcode_branch_zero();
@@ -101,10 +108,24 @@ int opcode_load();
 int opcode_store();
 int opcode_read();
 int opcode_write();
+
 void process(char *);
-void output_value(int);
-void resize_out_buffer(int);
-int out_buff_len();
+char *instruction_string(int);
+
+void stop_profiling(struct profile *);
+void start_profiling(struct profile *);
+void reset_profiling(struct profile *);
+void profile_log(struct profile *);
+void profile_unlog(struct profile *);
+int writeprofile(char *, struct profile *);
+
+struct io_buffer *new_io_buffer(int);
+void resize_io_buffer(struct io_buffer *, int);
+int size_io_buffer(struct io_buffer *);
+void add_io_value(struct io_buffer *, int);
+int remove_io_value(struct io_buffer *);
+int memory_dump();
+
 bool allowedchar(int);
 int token(char *);
 bool endcond(char);
