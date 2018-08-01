@@ -18,3 +18,24 @@ function Problem(difficulty) {
     this.multiplier = randBetween(2,10);
     this.product = this.multiplicand * this.multiplier;
 }
+
+/*
+ * Will update the page to show the problem
+ */
+function displayProblem() {
+
+}
+
+/*
+ * Will update the page to show the answer
+ */
+function displayAnswer() {
+
+}
+
+var prob;
+
+window.onload = function() {
+    prob = new Problem("easy");
+    displayProblem();
+}
