@@ -41,6 +41,7 @@ function start_game() {
 
 /*
  * This will create the beads and put them on the screen.
+ * We still need to do this.
  */
 function create_beads() {
 
