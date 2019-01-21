@@ -313,7 +313,6 @@ void process(char *line) {
  * that will control the simulator).
  */
 int token(char *str) {
-  int val = INVALID;
   if( strcmp(str, "break") == 0 ) {
     return BREAK;
   }
@@ -371,31 +370,31 @@ int token(char *str) {
   if( strcmp(str, "step") == 0 || strcmp(str, "s") == 0 ) {
     sml->stepping = true;
     sml->running = true;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "go") == 0 || strcmp(str, "g") == 0 ) {
     sml->iptr = 0;
     sml->stepping = false;
     sml->running = true;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "continue") == 0 || strcmp(str, "cont") == 0) {
     sml->stepping = false;
     sml->running = true;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "stop") == 0 ) {
     sml->stepping = false;
     sml->running = false;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "nodebug") == 0 ) {
     sml->debug  = false;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "debug") == 0 ) {
     sml->debug  = true;
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "dumpmem") == 0 ) {
     return DUMPMEM;
@@ -414,34 +413,34 @@ int token(char *str) {
   }
   if( strcmp(str, "profile") == 0 ) {
     start_profiling(profile_data);
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "noprofile") == 0 ) {
     stop_profiling(profile_data);
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "resetprofile") == 0 ) {
     reset_profiling(profile_data);
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "reset") == 0 ) {
     init_machine();
     displaymem();
-    return val;
+    return INVALID;
   }
   /* debugging purposes */
   if( strcmp(str, "displaymem") == 0 ) {
     displaymem();
-    return val;
+    return INVALID;
   }
   if( strcmp(str, "wipe") == 0 ) {
     outbuff->head = 0;
     outbuff->len = 0;
     displayoutput();
-    return val;
+    return INVALID;
   }
   error_message("Unrecognized string:",str,0);
-  return val;
+  return INVALID;
 }
 
 /*
