@@ -98,7 +98,7 @@ void process(char *line) {
       if( endcond( line[lineptr] ) ) {
         str[strptr] = 0;
 	opcode = token(str);
-	if( opcode >= 0 ) {
+	if( opcode != INVALID ) {
 	  negative = false;
 	  value = 0;
 	  strptr = 0;
