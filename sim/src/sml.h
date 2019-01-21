@@ -76,7 +76,7 @@ extern WINDOW *inputwindow;
 extern WINDOW *outputwindow;
 
 // Function Defintions
-int init_machine();
+void init_machine();
 void error_message(char *, char *, char *);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int);

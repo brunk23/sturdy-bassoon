@@ -29,11 +29,8 @@ int main(int argc, char *argv[])
   outbuff = 0;			/* Set by init_windows */
   inbuff = new_io_buffer(MEMSIZE);
 
-  // If there's an error making the machine, quit.
-  if ( init_machine() ) {
-    fprintf(stderr,"ERROR: Failed to create SML Machine.\n");
-    return 1;
-  }
+
+  init_machine();
 
   init_windows();
   updatescreen();
@@ -169,7 +166,10 @@ int run_loop() {
   return 0;
 }
 
-int init_machine() {
+/*
+ * This currently can't fail.
+ */
+void init_machine() {
   int i;
   // Unsupported OPCODES crash the machine.
   for(i = 0; i < MAXOP; ++i) {
@@ -215,5 +215,6 @@ int init_machine() {
     sml->breaktable[i] = false;
     sml->memory[i] = 0;
   }
-  return 0;
+
+  return;
 }
