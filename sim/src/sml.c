@@ -85,7 +85,7 @@ void cleanup() {
  * that haven't been read, yet. We also could use a buffer for
  * breakpoints.
  */
-int run_loop() {
+void run_loop() {
   int key, i;
   bool update = true;
 
@@ -163,7 +163,7 @@ int run_loop() {
       }
     }
   }
-  return 0;
+  return;
 }
 
 /*

@@ -14,7 +14,7 @@
 #define OPFACT 100
 
 struct machineState;		/* Forward declare */
-typedef int (*opPtr)();
+typedef void (*opPtr)();
 
 /*
  * Not all these opcodes were part of the original spec.
@@ -80,7 +80,7 @@ void init_machine();
 void error_message(char *, char *, char *);
 bool out_of_bounds(int, int, int);
 bool is_valid_address(int);
-int run_loop();
+void run_loop();
 void cleanup();
 int init_windows();
 void displaymem();
@@ -91,23 +91,23 @@ void term_resize();
 void sig_int(int);
 void updatescreen();
 
-int opcode_branch();
-int opcode_branch_neg();
-int opcode_branch_zero();
-int opcode_nop();
-int opcode_halt();
-int opcode_invalid();
-int opcode_add();
-int opcode_subtract();
-int opcode_multiply();
-int opcode_divide();
-int opcode_mod();
-int opcode_inc();
-int opcode_dec();
-int opcode_load();
-int opcode_store();
-int opcode_read();
-int opcode_write();
+void opcode_branch();
+void opcode_branch_neg();
+void opcode_branch_zero();
+void opcode_nop();
+void opcode_halt();
+void opcode_invalid();
+void opcode_add();
+void opcode_subtract();
+void opcode_multiply();
+void opcode_divide();
+void opcode_mod();
+void opcode_inc();
+void opcode_dec();
+void opcode_load();
+void opcode_store();
+void opcode_read();
+void opcode_write();
 
 void process(char *);
 char *instruction_string(int);

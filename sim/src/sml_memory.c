@@ -1,38 +1,38 @@
 #include "sml.h"
 
 // load operation
-int opcode_load() {
+void opcode_load() {
   sml->iptr++;
   sml->acc = sml->memory[sml->operand];
-  return 0;
+  return;
 }
 
 // store operation
-int opcode_store() {
+void opcode_store() {
   sml->iptr++;
   sml->memory[sml->operand] = sml->acc;
   update_mem_addr(sml->operand);
-  return 0;
+  return;
 }
 
 // simple operation
-int opcode_read() {
+void opcode_read() {
   /* There is no input at this time */
   if( size_io_buffer(inbuff) == 0 ) {
     profile_unlog(profile_data);
-    return 0;
+    return;
   }
   sml->memory[sml->operand] = remove_io_value(inbuff);
   sml->iptr++;
   update_mem_addr(sml->operand);
-  return 0;
+  return;
 }
 
-int opcode_write() {
+void opcode_write() {
   add_io_value(outbuff, sml->memory[sml->operand]);
   displayoutput();
   sml->iptr++;
-  return 0;
+  return;
 }
 
 inline bool is_valid_address(int address) {
