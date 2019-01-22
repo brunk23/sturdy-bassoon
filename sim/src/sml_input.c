@@ -8,52 +8,35 @@ char userline[BUFFSIZE + 1];
 int buffptr = 0;
 
 void process(char *line) {
-  static bool infileoper = false;
   char str[BUFFSIZE+1];
   int value = 0, opcode = 0, state = BLANK;
-  unsigned int lineptr, strptr = 0;
-  bool negative = false;
+  unsigned int lineptr = 0;
 
   error_message(0,0,0);
   buffptr = 0;
 
-  for( lineptr = 0; lineptr < BUFFSIZE; lineptr++ ) {
+  while( lineptr < BUFFSIZE ) {
 
     switch( state ) {
       /* BLANK state */
     case BLANK:
-      if( endstr( line[lineptr] ) ) {
+      value = getnextword( &line[lineptr], str);
+      if( INVALID == value ) {
 	return;
       }
+      lineptr += value;
 
-      if( isalpha( line[lineptr] ) ) {
-	strptr = 0;
-	str[strptr] = tolower(line[lineptr]);
-	strptr++;
+      if( isalpha( str[0] ) ) {
 	state = ALPHA;
 	break;
       }
 
-      if( isdigit(line[lineptr]) ||
-	  line[lineptr] == '-' ||
-	  line[lineptr] == '+') {
-
-	negative = false;
-	if( line[lineptr] == '-' ) {
-	  negative = true;
-	}
-	if( isdigit( line[lineptr] ) ) {
-	  value = line[lineptr] - '0';
-	} else {
-	  value = 0;
-	}
+      if( isdigit(str[0]) || str[0] == '-' || str[0] == '+') {
 	state = NUMBER;
 	break;
       }
 
-      if( line[lineptr] == '@' ) {
-	negative = false;
-	value = 0;
+      if( str[0] == '@' ) {
 	state = ADDRESS;
 	break;
       }
@@ -61,248 +44,145 @@ void process(char *line) {
 
       /* NUMBER state */
     case NUMBER:
-      if( endcond( line[lineptr] ) ) {
-	state = BLANK;
-	if( !out_of_bounds(value, 0, MAXVAL) ) {
-	  if( negative ) {
-	    value *= -1;
-	  }
-	  if( sml->running == false && sml->stepping == false ) {
-	    sml->memory[sml->iptr] = value;
-	    update_mem_addr(sml->iptr);
-	    sml->iptr++;
-	    sml->iptr %= MEMSIZE;
-	  } else {
-	    add_io_value(inbuff, value);
-	  }
-	} else {
-	  error_message("Number out of range:","Ignoring",line);
-	}
-	if( endstr( line[lineptr] ) ) {
-	  return;
-	}
-	break;
-      }
-
-      if( isdigit( line[lineptr] ) ) {
-        value *= 10;
-        value += line[lineptr] - '0';
-        break;
-      }
-      error_message("Errors in number format:","Ignoring value",line);
       state = BLANK;
+      value = numberbetween(str, MINVAL, MAXVAL);
+      if( INVALID != value ) {
+	if( sml->running == false && sml->stepping == false ) {
+	  sml->memory[sml->iptr] = value;
+	  update_mem_addr(sml->iptr);
+	  sml->iptr++;
+	  sml->iptr %= MEMSIZE;
+	} else {
+	  add_io_value(inbuff, value);
+	}
+      } else {
+	error_message("Error in number or out of range:","Ignoring",line);
+      }
       break;
 
       /* ALPHA state */
     case ALPHA:
-      if( endcond( line[lineptr] ) ) {
-        str[strptr] = 0;
-	opcode = token(str);
-	if( opcode != INVALID ) {
-	  negative = false;
-	  value = 0;
-	  strptr = 0;
-	  switch( opcode ) {
-	  case HALT:
-	    sml->memory[sml->iptr] = opcode * OPFACT;
-	    update_mem_addr(sml->iptr);
-	    sml->iptr++;
-	    sml->iptr %= MEMSIZE;
-	    state = BLANK;
-	    break;
-	  case DUMPMEM:
-	  case DUMPSTATE:
-	  case RESTOREMEM:
-	  case DUMPPROFILE:
-	    state = FILEIOHELP;
-	    break;
-	  default:
-	    state = ASSEMBLEHELP;
-	    break;
-	  }
-	} else {
+      opcode = token(str);
+      if( opcode != INVALID ) {
+	value = 0;
+	switch( opcode ) {
+	case HALT:
+	  // HALT needs no arguments and is handled here
+	  sml->memory[sml->iptr] = opcode * OPFACT;
+	  update_mem_addr(sml->iptr);
+	  sml->iptr++;
+	  sml->iptr %= MEMSIZE;
 	  state = BLANK;
-	}
-        if( endstr( line[lineptr] ) ) {
-          return;
-        }
-        break;
-      }
-      if( isalpha( line[lineptr] ) ) {
-        str[strptr] = tolower(line[lineptr]);
-        strptr++;
-        break;
-      }
-      error_message("Garbage in command word:","Ignoring word",line);
-      state = BLANK;
-      break;
+	  break;
 
-      /* FILEIOHELP state */
-    case FILEIOHELP:
-      if( endstr(line[lineptr]) ) {
-	return;
+	case DUMPMEM:
+	case DUMPSTATE:
+	case RESTOREMEM:
+	case DUMPPROFILE:
+	  state = FILEIO;
+	  break;
+	case VALID:
+	  state = BLANK;
+	  break;
+	default:
+	  state = ASSEMBLE;
+	  break;
+	}
+      } else {
+	error_message("Garbage in command word:","Ignoring word",line);
+	state = BLANK;
       }
-      if( endcond(line[lineptr]) ) {
-	break;
-      }
-      if( allowedchar( line[lineptr] ) ) {
-	strptr = 0;
-	str[strptr] = line[lineptr];
-	strptr++;
-	state = FILEIO;
-	break;
-      }
-      state = BLANK;
-      error_message("Could not find address",line,0);
       break;
 
       /* FILEIO state */
     case FILEIO:
-      if( endcond( line[lineptr] ) ) {
-	state = BLANK;
-	str[strptr] = 0;
-	if( !infileoper ) {
-	  infileoper = true;
-	  switch( opcode ) {
-	  case DUMPMEM:
-	    if( !(writefile(str) == 0) ) {
-	      error_message("Unable to save memory to file",line,0);
-	    }
-	    break;
-	  case DUMPSTATE:
-	    if( !(writestate(str) == 0) ) {
-	      error_message("Unable to save state to file",line,0);
-	    }
-	    break;
-	  case DUMPPROFILE:
-	    if( !(writeprofile(str, profile_data) == 0) ) {
-	      error_message("Unable to save state to file",line,0);
-	    }
-	    break;
-	  case RESTOREMEM:
-	    if( !(readfile(str) == 0 ) ) {
-	      error_message("Unable to read file to memory",line,0);
-	    }
-	    break;
-	  default:
-	    error_message("Bad state in file io",line,0);
-	    break;
-	  }
-	  infileoper = false;
-	}
-	if( endstr( line[lineptr] ) ) {
-	  return;
-	}
-	break;
-      }
-      if( allowedchar( line[lineptr] ) ) {
-        str[strptr] = line[lineptr];
-        strptr++;
-        break;
-      }
-      error_message("Bad file name:","Command ignored",line);
       state = BLANK;
-      break;
-
-      /* ASSEMBLEHELP state */
-    case ASSEMBLEHELP:
-      if( endstr(line[lineptr]) ) {
-	return;
-      }
-      if( endcond(line[lineptr]) ) {
+      value = getnextword( &line[lineptr], str );
+      if( INVALID == value ) {
+	error_message("Bad file name",line,0);
 	break;
       }
-      if( isdigit( line[lineptr]) ) {
-	value = line[lineptr] - '0';
-	state = ASSEMBLE;
-	break;
-      }
-      if( line[lineptr] == '-' || line[lineptr] == '+' ) {
-	if( line[lineptr] == '-' ) {
-	  negative = true;
+      lineptr += value;
+      switch( opcode ) {
+      case DUMPMEM:
+	if( !(writefile(str) == 0) ) {
+	  error_message("Unable to save memory to file",line,0);
 	}
-	value = 0;
-	state = ASSEMBLE;
+	break;
+      case DUMPSTATE:
+	if( !(writestate(str) == 0) ) {
+	  error_message("Unable to save state to file",line,0);
+	}
+	break;
+      case DUMPPROFILE:
+	if( !(writeprofile(str, profile_data) == 0) ) {
+	  error_message("Unable to save state to file",line,0);
+	}
+	break;
+      case RESTOREMEM:
+	if( !(readfile(str) == 0 ) ) {
+	  error_message("Unable to read file to memory",line,0);
+	}
+	break;
+      default:
+	error_message("Bad state in file io",line,0);
 	break;
       }
-      state = BLANK;
-      error_message("Could not find address",line,0);
       break;
 
       /* ADDRESS state */
     case ADDRESS:
-      if( endcond( line[lineptr] ) ) {
-	if( !out_of_bounds(value, 0, MEMSIZE) ) {
-	  sml->iptr = value;
-	} else {
-	  error_message("Invalid address in @ command:","Staying put",line);
-	}
-	if( endstr( line[lineptr] ) ) {
-	  return;
-	}
-	state = BLANK;
-	break;
+      value = numberbetween( &str[1], 0, MEMSIZE );
+      if( value != INVALID ) {
+	sml->iptr = value;
+      } else {
+	error_message("Invalid address in @ command:","Staying put",line);
       }
-      if( isdigit( line[lineptr] ) ) {
-        value *= 10;
-        value += line[lineptr] - '0';
-        break;
-      }
-      error_message("Errors in @ command string:","Ignoring command",line);
       state = BLANK;
       break;
 
       /* ASSEMBLE state */
     case ASSEMBLE:
-      if( endcond( line[lineptr] ) ) {
-	state = BLANK;
-	if( negative ) {
-	  value *= -1;
-	}
-	if( opcode == SET ) {
-	  if( !out_of_bounds(value, MINVAL, MAXVAL) ) {
-	    sml->acc = value;
-	  } else {
-	    error_message("Unable to set accumulator",line,0);
-	  }
-	  break;
-	}
-	if( !out_of_bounds(value, 0, MEMSIZE) ) {
-	  if( opcode == BREAK ) {
-	    sml->breaktable[value] = true;
-	    break;
-	  }
-	  if( opcode == CLEAR ) {
-	    sml->breaktable[value] = false;
-	    break;
-	  }
-	  opcode *= OPFACT;
-	  opcode += value;
-	  sml->memory[sml->iptr] = opcode;
-	  update_mem_addr(sml->iptr);
-	  sml->iptr++;
+      state = BLANK;
+      if( INVALID == ( value = getnextword(&line[lineptr], str) ) ) {
+	error_message("Missing operand","Ignoring command",line);
+	break;
+      }
+      lineptr += value;
+
+      if( opcode == SET ) {
+	value = numberbetween(str, MINVAL, MAXVAL);
+	if( value != INVALID ) {
+	  sml->acc = value;
 	} else {
-	  error_message("Invalid address in assembly command:",line,0);
-	}
-	if( endstr( line[lineptr] ) ) {
-	  return;
+	  error_message("Unable to set accumulator",line,0);
 	}
 	break;
       }
-      if( isdigit( line[lineptr] ) ) {
-        value *= 10;
-        value += line[lineptr] - '0';
-        break;
+      value = numberbetween(str, 0, MEMSIZE);
+      if( value != INVALID ) {
+	if( opcode == BREAK ) {
+	  sml->breaktable[value] = true;
+	  break;
+	}
+	if( opcode == CLEAR ) {
+	  sml->breaktable[value] = false;
+	  break;
+	}
+	opcode *= OPFACT;
+	opcode += value;
+	sml->memory[sml->iptr] = opcode;
+	update_mem_addr(sml->iptr);
+	sml->iptr++;
+      } else {
+	error_message("Invalid address in assembly command:",line,0);
       }
-      error_message("Errors in assembly command:","Ignoring command",line);
-      state = BLANK;
       break;
 
     default:
       state = BLANK;
       break;
     }
-
   }
 }
 
@@ -313,6 +193,12 @@ void process(char *line) {
  * that will control the simulator).
  */
 int token(char *str) {
+  int i;
+
+  for( i = 0; str[i]; i++ ) {
+    str[i] = tolower( str[i] );
+  }
+
   if( strcmp(str, "break") == 0 ) {
     return BREAK;
   }
@@ -370,31 +256,31 @@ int token(char *str) {
   if( strcmp(str, "step") == 0 || strcmp(str, "s") == 0 ) {
     sml->stepping = true;
     sml->running = true;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "go") == 0 || strcmp(str, "g") == 0 ) {
     sml->iptr = 0;
     sml->stepping = false;
     sml->running = true;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "continue") == 0 || strcmp(str, "cont") == 0) {
     sml->stepping = false;
     sml->running = true;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "stop") == 0 ) {
     sml->stepping = false;
     sml->running = false;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "nodebug") == 0 ) {
     sml->debug  = false;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "debug") == 0 ) {
     sml->debug  = true;
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "dumpmem") == 0 ) {
     return DUMPMEM;
@@ -413,31 +299,31 @@ int token(char *str) {
   }
   if( strcmp(str, "profile") == 0 ) {
     start_profiling(profile_data);
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "noprofile") == 0 ) {
     stop_profiling(profile_data);
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "resetprofile") == 0 ) {
     reset_profiling(profile_data);
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "reset") == 0 ) {
     init_machine();
     displaymem();
-    return INVALID;
+    return VALID;
   }
   /* debugging purposes */
   if( strcmp(str, "displaymem") == 0 ) {
     displaymem();
-    return INVALID;
+    return VALID;
   }
   if( strcmp(str, "wipe") == 0 ) {
     outbuff->head = 0;
     outbuff->len = 0;
     displayoutput();
-    return INVALID;
+    return VALID;
   }
   error_message("Unrecognized string:",str,0);
   return INVALID;
@@ -485,4 +371,73 @@ inline bool endstr(char a) {
     return true;
   }
   return false;
+}
+
+/*
+ * Takes a string consisting of a single word
+ * Returns number >= min and <= max.
+ * Returns INVALID on error
+ */
+int numberbetween(char *str, int min, int max) {
+  int value = INVALID, i;
+  bool negative = false;
+
+  for( i = 0; i < BUFFSIZE; i++ ) {
+    if( !str[i] ) {
+      if( negative ) {
+	value *= -1;
+      }
+      if( out_of_bounds(value, min, max) ) {
+	return INVALID;
+      }
+      return value;
+    }
+    if( i == 0 ) {
+      if( str[i] == '-' ) {
+	negative = true;
+	continue;
+      }
+      if( str[i] == '+' ) {
+	negative = false;
+	continue;
+      }
+    }
+    if( value == INVALID ) {
+      value = 0;
+    }
+    if( isdigit( str[i] ) ) {
+      value *= 10;
+      value += str[i] - '0';
+    } else {
+      // Anything unexpected in the number invalidates the whole thing
+      return INVALID;
+    }
+  }
+
+  // We should not leave the above loop without returning
+  // If we do, it's almost certainly an error.
+  return INVALID;
+}
+
+/*
+ * copies the next word in src into the dest buffer
+ * Returns: number of characters read or INVALID
+ */
+int getnextword(char *src, char *dest) {
+  int len = 0, i = 0;
+
+  // Throw out leading whitespace, INVALID if no word found
+  while( endcond(src[len] ) ) {
+    if( endstr( src[len] ) ) {
+      return INVALID;
+    }
+    len++;
+  }
+
+  for( ; !endcond(src[len]); len++ ) {
+    dest[i] = src[len];
+    i++;
+  }
+  dest[i] = 0;
+  return len;
 }

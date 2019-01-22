@@ -32,7 +32,7 @@ enum PROCESS_STATES {
   ASSEMBLE, ASSEMBLEHELP,
   FILEIO, FILEIOHELP, DUMPPROFILE,
   STEP, GO, STOP, BREAK, CONTINUE, CLEAR, SET,
-  DUMPMEM, DUMPSTATE, RESTOREMEM, INVALID
+  DUMPMEM, DUMPSTATE, RESTOREMEM, INVALID, VALID
 };
 
 struct machineState {
@@ -133,5 +133,7 @@ bool endstr(char);
 int readfile(char *);
 int writefile(char *);
 int writestate(char *);
+int numberbetween(char *, int, int);
+int getnextword(char *, char *);
 
 #endif
