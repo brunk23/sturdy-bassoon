@@ -21,7 +21,7 @@ void process(char *line) {
       /* BLANK state */
     case BLANK:
       value = getnextword( &line[lineptr], str);
-      if( INVALID == value ) {
+      if( !value ) {
 	return;
       }
       lineptr += value;
@@ -98,7 +98,7 @@ void process(char *line) {
     case FILEIO:
       state = BLANK;
       value = getnextword( &line[lineptr], str );
-      if( INVALID == value ) {
+      if( !value ) {
 	error_message("Bad file name",line,0);
 	break;
       }
@@ -144,7 +144,7 @@ void process(char *line) {
       /* ASSEMBLE state */
     case ASSEMBLE:
       state = BLANK;
-      if( INVALID == ( value = getnextword(&line[lineptr], str) ) ) {
+      if(  !( value = getnextword(&line[lineptr], str) ) ) {
 	error_message("Missing operand","Ignoring command",line);
 	break;
       }
@@ -421,15 +421,15 @@ int numberbetween(char *str, int min, int max) {
 
 /*
  * copies the next word in src into the dest buffer
- * Returns: number of characters read or INVALID
+ * Returns: number of characters read
  */
 int getnextword(char *src, char *dest) {
   int len = 0, i = 0;
 
-  // Throw out leading whitespace, INVALID if no word found
+  // Throw out leading whitespace, 0 if no word found
   while( endcond(src[len] ) ) {
     if( endstr( src[len] ) ) {
-      return INVALID;
+      return 0;
     }
     len++;
   }
