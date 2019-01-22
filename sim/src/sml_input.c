@@ -132,7 +132,7 @@ void process(char *line) {
 
       /* ADDRESS state */
     case ADDRESS:
-      value = numberbetween( &str[1], 0, MEMSIZE );
+      value = numberbetween( &str[1], 0, MEMSIZE-1 );
       if( value != INVALID ) {
 	sml->iptr = value;
       } else {
@@ -159,7 +159,7 @@ void process(char *line) {
 	}
 	break;
       }
-      value = numberbetween(str, 0, MEMSIZE);
+      value = numberbetween(str, 0, MEMSIZE-1 );
       if( value != INVALID ) {
 	if( opcode == BREAK ) {
 	  sml->breaktable[value] = true;
