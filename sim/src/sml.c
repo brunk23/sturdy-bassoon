@@ -108,6 +108,7 @@ void run_loop() {
 
       if( key == '\n' ) {
 	process(userline);
+	buffptr = 0;
 	for( i = 0; i < BUFFSIZE; i++ ) {
 	  userline[i] = 0;
 	}

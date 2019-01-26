@@ -12,8 +12,8 @@ void process(char *line) {
   int value = 0, opcode = 0, state = BLANK;
   unsigned int lineptr = 0;
 
+  // Clear error messages
   error_message(0,0,0);
-  buffptr = 0;
 
   while( lineptr < BUFFSIZE ) {
 
@@ -45,14 +45,17 @@ void process(char *line) {
       /* NUMBER state */
     case NUMBER:
       state = BLANK;
+
       value = numberbetween(str, MINVAL, MAXVAL);
       if( INVALID != value ) {
 	if( sml->running == false && sml->stepping == false ) {
+	  // If we're not running, put the number directly into memory
 	  sml->memory[sml->iptr] = value;
 	  update_mem_addr(sml->iptr);
 	  sml->iptr++;
 	  sml->iptr %= MEMSIZE;
 	} else {
+	  // If we're running, the number is saved in the input buffer
 	  add_io_value(inbuff, value);
 	}
       } else {
@@ -64,7 +67,6 @@ void process(char *line) {
     case ALPHA:
       opcode = token(str);
       if( opcode != INVALID ) {
-	value = 0;
 	switch( opcode ) {
 	case HALT:
 	  // HALT needs no arguments and is handled here
@@ -75,15 +77,20 @@ void process(char *line) {
 	  state = BLANK;
 	  break;
 
+	  // All the following cases are file operations
 	case DUMPMEM:
 	case DUMPSTATE:
 	case RESTOREMEM:
 	case DUMPPROFILE:
 	  state = FILEIO;
 	  break;
+
+	  // Valid cases were handled in token()
 	case VALID:
 	  state = BLANK;
 	  break;
+
+	  // Anything left must be assembly command to be compiled
 	default:
 	  state = ASSEMBLE;
 	  break;
@@ -97,12 +104,14 @@ void process(char *line) {
       /* FILEIO state */
     case FILEIO:
       state = BLANK;
+
       value = getnextword( &line[lineptr], str );
       if( !value ) {
-	error_message("Bad file name",line,0);
+	error_message("No file name provided",line,0);
 	break;
       }
       lineptr += value;
+
       switch( opcode ) {
       case DUMPMEM:
 	if( !(writefile(str) == 0) ) {
@@ -116,7 +125,7 @@ void process(char *line) {
 	break;
       case DUMPPROFILE:
 	if( !(writeprofile(str, profile_data) == 0) ) {
-	  error_message("Unable to save state to file",line,0);
+	  error_message("Unable to save profile data to file",line,0);
 	}
 	break;
       case RESTOREMEM:
@@ -144,12 +153,14 @@ void process(char *line) {
       /* ASSEMBLE state */
     case ASSEMBLE:
       state = BLANK;
-      if(  !( value = getnextword(&line[lineptr], str) ) ) {
+
+      if( !( value = getnextword(&line[lineptr], str) ) ) {
 	error_message("Missing operand","Ignoring command",line);
 	break;
       }
       lineptr += value;
 
+      // This isn't a real opcode, it just sets the accumulator
       if( opcode == SET ) {
 	value = numberbetween(str, MINVAL, MAXVAL);
 	if( value != INVALID ) {
@@ -159,8 +170,11 @@ void process(char *line) {
 	}
 	break;
       }
+
+      // At this point, the value should be a memory address
       value = numberbetween(str, 0, MEMSIZE-1 );
       if( value != INVALID ) {
+	// break and clear aren't opcodes, they set and clear debug breakpoints
 	if( opcode == BREAK ) {
 	  sml->breaktable[value] = true;
 	  break;
@@ -169,6 +183,8 @@ void process(char *line) {
 	  sml->breaktable[value] = false;
 	  break;
 	}
+
+	// The rest are opcodes which actually get compiled
 	opcode *= OPFACT;
 	opcode += value;
 	sml->memory[sml->iptr] = opcode;
