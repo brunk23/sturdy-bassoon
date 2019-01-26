@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
 {
   int i;
 
-  buffptr = 0;
-
   for( i = 0; i < BUFFSIZE+1; i++) {
     userline[i] = 0;
   }
@@ -86,7 +84,7 @@ void cleanup() {
  * breakpoints.
  */
 void run_loop() {
-  int key, i;
+  int key, i, buffptr = 0;
   bool update = true;
 
   sml->iptr = 0;

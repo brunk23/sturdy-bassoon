@@ -64,7 +64,6 @@ struct profile {
 };
 
 extern char userline[];
-extern int buffptr;
 extern struct machineState *sml;
 extern struct io_buffer *inbuff;
 extern struct io_buffer *outbuff;
