@@ -5,7 +5,6 @@
 #include "sml.h"
 
 char userline[BUFFSIZE + 1];
-int buffptr = 0;
 
 void process(char *line) {
   char str[BUFFSIZE+1];
