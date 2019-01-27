@@ -3,15 +3,15 @@
 
 #include <ncurses.h>
 
-#define VERSION "1.10"
+#define VERSION "1.20"
 #define MINWIDTH 80
 #define MINHEIGHT 24
 #define BUFFSIZE 80
 #define MEMSIZE 100
 #define MAXOP 100
-#define MAXVAL 9999
-#define MINVAL -9999
-#define OPFACT 100
+#define MAXVAL (MAXOP * MEMSIZE - 1)
+#define MINVAL (-1 * (MAXOP * MEMSIZE - 1))
+#define OPFACT MEMSIZE
 
 struct machineState;		/* Forward declare */
 typedef void (*opPtr)();
